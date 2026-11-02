@@ -1,0 +1,43 @@
+{
+  "app": "Tilt Pen",
+  "tgfxVersion": "0.0.2-alpha.8",
+  "comparison": "worker autorelease pool disabled vs enabled",
+  "recording": "Original captured runs from this session, aligned to the same 12.6-second scripted tilt; no recreated app frames.",
+  "conditions": [
+    "Same iOS27 simulator",
+    "Debug builds",
+    "One warmup run",
+    "Sequential captures",
+    "Default-props startup compatibility patch retained on both versions"
+  ],
+  "metrics": {
+    "tgfx-before-autorelease": {
+      "uiFps": 59.819566258225535,
+      "meanRssMiB": 2761.4083333333333,
+      "peakRssMiB": 2953.25,
+      "videoOffsetSeconds": 2.17876171875
+    },
+    "tgfx": {
+      "uiFps": 59.99777389205076,
+      "meanRssMiB": 744.577612704918,
+      "peakRssMiB": 768.015625,
+      "videoOffsetSeconds": 2.12686572265625
+    }
+  },
+  "limits": [
+    "UI callback FPS is not GPU presentation FPS.",
+    "RSS is host process memory, not GPU-only or hardware memory.",
+    "Before clip starts after memory has already accumulated; this is not a fresh-start growth test.",
+    "This alpha.8 app demonstration is separate from the alpha.12 library regression test in PR1."
+  ],
+  "files": {
+    "tilt-pen-before-after.mp4": {
+      "bytes": 801822,
+      "sha256": "c759f03246b44610e44c9f03b7a8e4707b1f73cc61fdf819679bb194ee6453c7"
+    },
+    "tilt-pen-before-after.gif": {
+      "bytes": 939140,
+      "sha256": "80876665792234f3c5dad3394f5caa054bb165c692437bce6717ede09fc16475"
+    }
+  }
+}
