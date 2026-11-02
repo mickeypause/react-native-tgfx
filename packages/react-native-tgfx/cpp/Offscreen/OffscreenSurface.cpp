@@ -21,6 +21,10 @@
 
 namespace tgfxrn {
 
+#if defined(__APPLE__)
+void renderOffscreenAutoreleased(const std::weak_ptr<OffscreenSurface>& next);
+#endif
+
 namespace {
 
 /**
@@ -60,9 +64,13 @@ class OffscreenWorker {
         next = std::move(queue_.front());
         queue_.pop_front();
       }
+#if defined(__APPLE__)
+      renderOffscreenAutoreleased(next);
+#else
       if (auto surface = next.lock()) {
         surface->renderNow();
       }
+#endif
     }
   }
 
