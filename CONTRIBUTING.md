@@ -124,8 +124,9 @@ blank.
 renders with fresh pixel uploads and one blur filter (temporary GPU targets).
 Each `toImage()` waits for the offscreen
 worker; both the input image and snapshot are disposed before the next
-iteration. Pixel assertions at both ends verify the uploaded pixels and moving
-rectangle actually rendered; the app reports no memory counters.
+iteration. Pixel assertions verify the uploaded pixels, moving rectangle, and
+blending across a sharp interior boundary, so bypassing blur fails the test.
+The app reports no memory counters.
 
 Build and install the example first, then run from the repo root (replace the
 simulator name, OS version and UDID with the same target):
@@ -138,10 +139,14 @@ TGFX_IOS_SIMULATOR='iPhone 17 Pro' TGFX_IOS_VERSION='26.5' \
 
 The host samples that simulator's `TgfxExample` process with `ps`. The existing
 warmup, median-growth threshold (30 MiB), and exit codes apply, but the metric is
-RSS rather than Android PSS. A failed pixel test, missing process or insufficient
-samples produces no passing memory verdict. Use fresh app launches on the same
+RSS rather than Android PSS. A changed process ID discards the earlier process's
+samples and starts warmup again. A failed pixel test, missing process or
+insufficient samples produces no passing memory verdict. Use fresh app launches on the same
 simulator for before/after runs; rebuild after changing native code. Simulator
 RSS demonstrates this regression, not physical-device or total GPU memory use.
+
+`node --test scripts/leak-check.test.mjs` checks process restarts, insufficient
+samples after a restart, and a stable process without launching a device.
 
 On Apple Silicon, the example's optional face detector can prevent simulator
 builds because ML Kit excludes arm64 simulators. For this headless reproduction,

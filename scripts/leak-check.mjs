@@ -12,7 +12,7 @@
 //
 // Exit codes: 0 no leak, 1 leak detected, 2 the run itself failed.
 import { execFile, spawn } from 'node:child_process';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const args = process.argv.slice(2);
@@ -58,6 +58,15 @@ const median = values => {
 const mb = kb => (kb / 1024).toFixed(1);
 
 const samples = [];
+let sampledPid = null;
+export function recordSample(parsed) {
+  if (parsed.pid !== undefined && parsed.pid !== sampledPid) {
+    // Harness may restart an existing app; never compare across processes.
+    samples.length = 0;
+    sampledPid = parsed.pid;
+  }
+  samples.push(parsed);
+}
 let sampling = false;
 async function sample() {
   if (sampling) return; // a slow dumpsys must not stack behind the timer
@@ -65,7 +74,7 @@ async function sample() {
   const out = IOS_SIMULATOR
     ? await new Promise(resolve => {
         execFile(
-          'ps', ['-axo', 'rss=,command='], { maxBuffer: 4 * 1024 * 1024 },
+          'ps', ['-axo', 'pid=,rss=,command='], { maxBuffer: 4 * 1024 * 1024 },
           (error, stdout) => resolve(error ? null : stdout)
         );
       })
@@ -78,21 +87,25 @@ async function sample() {
         row.includes(`/Devices/${IOS_SIMULATOR}/`) &&
         row.includes('/TgfxExample.app/TgfxExample')
     );
-    if (rows?.length === 1) parsed = { total: Number.parseInt(rows[0], 10) };
+    if (rows?.length === 1) {
+      const [pid, total] = rows[0].trim().split(/\s+/, 2).map(Number);
+      if (Number.isInteger(pid) && pid > 0) parsed = { pid, total };
+    }
   } else {
     parsed = out && parseMeminfo(out);
   }
   if (!parsed || !Number.isFinite(parsed.total)) return;
-  samples.push(parsed);
+  recordSample(parsed);
   console.log(
     `[leak-check] #${samples.length} ${METRIC} ${mb(parsed.total)}MB` +
+      (IOS_SIMULATOR ? ` pid=${parsed.pid}` : '') +
       (IOS_SIMULATOR
         ? ''
         : ` native ${mb(parsed.native ?? 0)}MB graphics ${mb(parsed.graphics ?? 0)}MB`)
   );
 }
 
-function verdict() {
+export function verdict() {
   // The first samples straddle install/launch/first-frames; judge steady state.
   const warmup = Math.max(5, Math.ceil(samples.length * 0.25));
   const settled = samples.slice(warmup);
@@ -121,29 +134,31 @@ function verdict() {
   return 0;
 }
 
-// A leftover instance would poison the early samples with its own memory.
-if (!IOS_SIMULATOR) await adb('shell', 'am', 'force-stop', PACKAGE);
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
+  // A leftover instance would poison the early samples with its own memory.
+  if (!IOS_SIMULATOR) await adb('shell', 'am', 'force-stop', PACKAGE);
 
-const runner = arg('runner', null);
-const child = spawn(
-  'bun',
-  [
-    'harness',
-    // The test path must come before the ignore override: yargs array options
-    // greedily swallow every following positional, `=` form included.
-    TEST,
-    '--testPathIgnorePatterns=$^',
-    ...(runner ? [`--harnessRunner=${runner}`] : []),
-    ...(METRO_PORT ? [`--metroPort=${METRO_PORT}`] : []),
-  ],
-  { cwd: exampleDir, stdio: 'inherit' }
-);
-const timer = setInterval(sample, INTERVAL_MS);
-child.on('exit', code => {
-  clearInterval(timer);
-  if (code !== 0) {
-    console.error(`[leak-check] harness exited with ${code} — no verdict`);
-    process.exit(2);
-  }
-  process.exit(verdict());
-});
+  const runner = arg('runner', null);
+  const child = spawn(
+    'bun',
+    [
+      'harness',
+      // The test path must come before the ignore override: yargs array options
+      // greedily swallow every following positional, `=` form included.
+      TEST,
+      '--testPathIgnorePatterns=$^',
+      ...(runner ? [`--harnessRunner=${runner}`] : []),
+      ...(METRO_PORT ? [`--metroPort=${METRO_PORT}`] : []),
+    ],
+    { cwd: exampleDir, stdio: 'inherit' }
+  );
+  const timer = setInterval(sample, INTERVAL_MS);
+  child.on('exit', code => {
+    clearInterval(timer);
+    if (code !== 0) {
+      console.error(`[leak-check] harness exited with ${code} — no verdict`);
+      process.exit(2);
+    }
+    process.exit(verdict());
+  });
+}
