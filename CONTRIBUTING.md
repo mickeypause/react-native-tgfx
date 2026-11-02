@@ -118,6 +118,37 @@ registries, the scene, the JSI boundary); GPU-side growth needs the real
 device, since the hosted emulator's software renderer draws image scenes
 blank.
 
+### Offscreen memory reproduction (iOS Simulator)
+
+`src/offscreenLeakSoak.harness.tsx` uses one retained 512×512 surface for 450
+renders with fresh pixel uploads and one blur filter (temporary GPU targets).
+Each `toImage()` waits for the offscreen
+worker; both the input image and snapshot are disposed before the next
+iteration. Pixel assertions at both ends verify the uploaded pixels and moving
+rectangle actually rendered; the app reports no memory counters.
+
+Build and install the example first, then run from the repo root (replace the
+simulator name, OS version and UDID with the same target):
+
+```sh
+TGFX_IOS_SIMULATOR='iPhone 17 Pro' TGFX_IOS_VERSION='26.5' \
+  node scripts/leak-check.mjs --ios-simulator <UDID> --runner ios-sim \
+  --metro-port 8094 --test src/offscreenLeakSoak.harness.tsx
+```
+
+The host samples that simulator's `TgfxExample` process with `ps`. The existing
+warmup, median-growth threshold (30 MiB), and exit codes apply, but the metric is
+RSS rather than Android PSS. A failed pixel test, missing process or insufficient
+samples produces no passing memory verdict. Use fresh app launches on the same
+simulator for before/after runs; rebuild after changing native code. Simulator
+RSS demonstrates this regression, not physical-device or total GPU memory use.
+
+On Apple Silicon, the example's optional face detector can prevent simulator
+builds because ML Kit excludes arm64 simulators. For this headless reproduction,
+locally disable iOS autolinking of `react-native-vision-camera-face-detector` in
+`apps/example/react-native.config.js`, then rerun `pod install`. The offscreen
+test does not use the camera.
+
 ## Imperative APIs first
 
 A lesson learned the hard way (see

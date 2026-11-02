@@ -39,7 +39,10 @@ export default {
     // An iOS simulator, selected with --harnessRunner=ios-sim.
     applePlatform({
       name: 'ios-sim',
-      device: appleSimulator('iPhone 17 Pro', '26.5'),
+      device: appleSimulator(
+        process.env.TGFX_IOS_SIMULATOR || 'iPhone 17 Pro',
+        process.env.TGFX_IOS_VERSION || '26.5'
+      ),
       bundleId: 'com.pikachu.ritesh.dev',
     }),
   ],

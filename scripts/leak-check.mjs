@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 // Memory-leak gate: runs the leak soak (apps/example/src/leakSoak.harness.tsx)
-// on the connected Android device while sampling `adb shell dumpsys meminfo`
+// while sampling Android `adb shell dumpsys meminfo` or iOS Simulator `ps`
 // from the host. All measurement lives out here in OS accounting — the app
 // deliberately reports nothing about its own memory.
 //
 //   node scripts/leak-check.mjs [--package com.tgfxexample] [--threshold-mb 30]
 //                               [--test src/leakSoak.harness.tsx] [--interval-ms 2000]
 //                               [--runner ci-emu]
+// iOS Simulator: --ios-simulator <UDID> --runner ios-sim --metro-port 8094
+// Select that same simulator with TGFX_IOS_SIMULATOR / TGFX_IOS_VERSION.
 //
 // Exit codes: 0 no leak, 1 leak detected, 2 the run itself failed.
 import { execFile, spawn } from 'node:child_process';
@@ -23,6 +25,9 @@ const PACKAGE = arg('package', 'com.tgfxexample');
 const THRESHOLD_MB = Number(arg('threshold-mb', '30'));
 const TEST = arg('test', 'src/leakSoak.harness.tsx');
 const INTERVAL_MS = Number(arg('interval-ms', '2000'));
+const IOS_SIMULATOR = arg('ios-simulator', null);
+const METRO_PORT = arg('metro-port', null);
+const METRIC = IOS_SIMULATOR ? 'RSS' : 'TOTAL PSS';
 
 const exampleDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'apps', 'example');
 
@@ -57,14 +62,33 @@ let sampling = false;
 async function sample() {
   if (sampling) return; // a slow dumpsys must not stack behind the timer
   sampling = true;
-  const out = await adb('shell', 'dumpsys', 'meminfo', PACKAGE);
+  const out = IOS_SIMULATOR
+    ? await new Promise(resolve => {
+        execFile(
+          'ps', ['-axo', 'rss=,command='], { maxBuffer: 4 * 1024 * 1024 },
+          (error, stdout) => resolve(error ? null : stdout)
+        );
+      })
+    : await adb('shell', 'dumpsys', 'meminfo', PACKAGE);
   sampling = false;
-  const parsed = out && parseMeminfo(out);
-  if (!parsed) return;
+  // Match this clone's executable path, never another booted simulator's app.
+  let parsed = null;
+  if (IOS_SIMULATOR) {
+    const rows = out?.split('\n').filter(row =>
+        row.includes(`/Devices/${IOS_SIMULATOR}/`) &&
+        row.includes('/TgfxExample.app/TgfxExample')
+    );
+    if (rows?.length === 1) parsed = { total: Number.parseInt(rows[0], 10) };
+  } else {
+    parsed = out && parseMeminfo(out);
+  }
+  if (!parsed || !Number.isFinite(parsed.total)) return;
   samples.push(parsed);
   console.log(
-    `[leak-check] #${samples.length} total ${mb(parsed.total)}MB ` +
-      `native ${mb(parsed.native ?? 0)}MB graphics ${mb(parsed.graphics ?? 0)}MB`
+    `[leak-check] #${samples.length} ${METRIC} ${mb(parsed.total)}MB` +
+      (IOS_SIMULATOR
+        ? ''
+        : ` native ${mb(parsed.native ?? 0)}MB graphics ${mb(parsed.graphics ?? 0)}MB`)
   );
 }
 
@@ -84,11 +108,13 @@ function verdict() {
   console.log(
     `[leak-check] settled growth (median of last third vs first third, ${settled.length} samples):`
   );
-  console.log(`[leak-check]   TOTAL PSS   ${mb(totalGrowth)}MB  (threshold ${THRESHOLD_MB}MB)`);
-  console.log(`[leak-check]   Native Heap ${mb(growth('native'))}MB`);
-  console.log(`[leak-check]   Graphics    ${mb(growth('graphics'))}MB`);
+  console.log(`[leak-check]   ${METRIC}   ${mb(totalGrowth)}MB  (threshold ${THRESHOLD_MB}MB)`);
+  if (!IOS_SIMULATOR) {
+    console.log(`[leak-check]   Native Heap ${mb(growth('native'))}MB`);
+    console.log(`[leak-check]   Graphics    ${mb(growth('graphics'))}MB`);
+  }
   if (totalGrowth > THRESHOLD_MB * 1024) {
-    console.error(`::error::memory leak: TOTAL PSS grew ${mb(totalGrowth)}MB during the soak`);
+    console.error(`::error::memory leak: ${METRIC} grew ${mb(totalGrowth)}MB during the soak`);
     return 1;
   }
   console.log('[leak-check] OK — no leak detected');
@@ -96,7 +122,7 @@ function verdict() {
 }
 
 // A leftover instance would poison the early samples with its own memory.
-await adb('shell', 'am', 'force-stop', PACKAGE);
+if (!IOS_SIMULATOR) await adb('shell', 'am', 'force-stop', PACKAGE);
 
 const runner = arg('runner', null);
 const child = spawn(
@@ -108,6 +134,7 @@ const child = spawn(
     TEST,
     '--testPathIgnorePatterns=$^',
     ...(runner ? [`--harnessRunner=${runner}`] : []),
+    ...(METRO_PORT ? [`--metroPort=${METRO_PORT}`] : []),
   ],
   { cwd: exampleDir, stdio: 'inherit' }
 );
