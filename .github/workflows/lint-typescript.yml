@@ -1,0 +1,85 @@
+name: Lint TypeScript
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/lint-typescript.yml'
+      - '**/*.ts'
+      - '**/*.tsx'
+      - '**/*.js'
+      - '**/*.jsx'
+      - '**/*.mjs'
+      - '**/*.cjs'
+      - '**/*.json'
+      - '**/.eslintrc.js'
+      - '**/.prettierrc*'
+      - 'bun.lock'
+  pull_request:
+    paths:
+      - '.github/workflows/lint-typescript.yml'
+      - '**/*.ts'
+      - '**/*.tsx'
+      - '**/*.js'
+      - '**/*.jsx'
+      - '**/*.mjs'
+      - '**/*.cjs'
+      - '**/*.json'
+      - '**/.eslintrc.js'
+      - '**/.prettierrc*'
+      - 'bun.lock'
+
+permissions:
+  contents: read
+
+# `shell: bash` is the alias carrying -e and -o pipefail, so a failure inside a
+# loop below aborts the step instead of being masked by the next package.
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  tsc:
+    name: Compile TypeScript (tsc)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install npm dependencies (bun)
+        run: bun install --frozen-lockfile
+
+      # Every workspace package, not a hardcoded one: a package this loop does
+      # not know about is a package with no gate.
+      - name: Run TypeScript (tsc)
+        run: for p in packages/*/; do (cd "$p" && bun run typecheck); done
+
+  lint:
+    name: Lint TypeScript (eslint, prettier)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install npm dependencies (bun)
+        run: bun install --frozen-lockfile
+
+      # `lint`/`format` rewrite files, so the packages run their checking pair.
+      - name: Run ESLint in packages
+        run: for p in packages/*/; do (cd "$p" && bun run lint:check); done
+
+      - name: Run Prettier in packages
+        run: for p in packages/*/; do (cd "$p" && bun run format:check); done
+
+      # The apps' `lint` is a plain `eslint .`; errors fail, warnings do not.
+      - name: Run ESLint in example
+        working-directory: apps/example
+        run: bun run lint
+
+      - name: Run ESLint in benchmark
+        working-directory: apps/benchmark
+        run: bun run lint

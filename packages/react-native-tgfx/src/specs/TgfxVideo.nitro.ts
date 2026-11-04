@@ -8,11 +8,10 @@ import type { HybridObject } from 'react-native-nitro-modules'
  * A frame never reaches JS at all, as pixels or as a pointer: the decoder writes
  * into a registry entry natively and JS only ever sees its id.
  */
-export interface TgfxVideo
-  extends HybridObject<{
-    ios: 'swift'
-    android: 'kotlin'
-  }> {
+export interface TgfxVideo extends HybridObject<{
+  ios: 'swift'
+  android: 'kotlin'
+}> {
   /** Total length in milliseconds, 0 when the source does not report one. */
   readonly duration: number
   readonly framerate: number
@@ -49,11 +48,10 @@ export interface TgfxVideo
   release(): void
 }
 
-export interface TgfxVideoFactory
-  extends HybridObject<{
-    ios: 'swift'
-    android: 'kotlin'
-  }> {
+export interface TgfxVideoFactory extends HybridObject<{
+  ios: 'swift'
+  android: 'kotlin'
+}> {
   /** A `file://`, `http(s)://`, `content://` or `asset://` URI, or a bare path. */
   load(uri: string): Promise<TgfxVideo>
 }

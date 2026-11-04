@@ -26,7 +26,6 @@ import {
   Stage,
   drawnSnapshot,
   sameFrame,
-  snapshot,
   stageBytes,
 } from './testSupport';
 
@@ -198,6 +197,37 @@ describe('tgfx image rendering', () => {
         ))}
       </>,
     );
+  });
+
+  /** The settled frame of the 128x128 sample drawn into one box with `fit`. */
+  async function fitFrame(fit: Fit, width: number, height: number) {
+    await render(
+      <Stage>
+        <Fill color={BACKGROUND} />
+        <TgfxImage
+          x={20}
+          y={20}
+          width={width}
+          height={height}
+          image={decoded.sample}
+          fit={fit}
+        />
+      </Stage>,
+    );
+    return stageBytes();
+  }
+
+  test('scaleDown shrinks an image larger than its box like contain', async () => {
+    const scaleDown = await fitFrame('scaleDown', 62, 44);
+    expect(sameFrame(scaleDown, await fitFrame('contain', 62, 44))).toBe(true);
+    // Also proves the image drew: two blank frames would match too.
+    expect(sameFrame(scaleDown, await fitFrame('fill', 62, 44))).toBe(false);
+  });
+
+  test('scaleDown leaves an image smaller than its box at its own size', async () => {
+    const scaleDown = await fitFrame('scaleDown', 160, 150);
+    expect(sameFrame(scaleDown, await fitFrame('none', 160, 150))).toBe(true);
+    expect(sameFrame(scaleDown, await fitFrame('fill', 160, 150))).toBe(false);
   });
 
   test('draws every sampling mode', async () => {

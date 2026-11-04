@@ -1,0 +1,142 @@
+name: Harness Android
+
+concurrency:
+  group: harness-android-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_name != 'main' }}
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/harness-android.yml'
+      - 'packages/**'
+      - 'apps/example/**'
+      - 'patches/**'
+      - 'scripts/tgfx-prebuilt.sh'
+      - 'package.json'
+      - 'bun.lock'
+  pull_request:
+    paths:
+      - '.github/workflows/harness-android.yml'
+      - 'packages/**'
+      - 'apps/example/**'
+      - 'patches/**'
+      - 'scripts/tgfx-prebuilt.sh'
+      - 'package.json'
+      - 'bun.lock'
+  workflow_dispatch:
+    inputs:
+      api_level:
+        description: 'Android API level of the emulator'
+        required: false
+        default: '35'
+        type: string
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  # Read by apps/example/rn-harness.config.mjs (the ci-emu runner).
+  HARNESS_AVD_NAME: ci-avd
+  HARNESS_AVD_API_LEVEL: ${{ inputs.api_level || '35' }}
+  HARNESS_AVD_PROFILE: pixel_7
+
+jobs:
+  harness:
+    name: Harness Android
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Reclaim disk space
+        uses: AdityaGarg8/remove-unwanted-software@v5
+        with:
+          remove-dotnet: true
+          remove-haskell: true
+          remove-codeql: true
+          remove-docker-images: true
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install npm dependencies (bun)
+        run: bun install --frozen-lockfile
+
+      # Keyed by the submodule's pinned commit, so a PR that bumps tgfx misses
+      # and builds it from source below.
+      - name: Fetch prebuilt tgfx
+        id: prebuilt
+        continue-on-error: true
+        run: bash scripts/tgfx-prebuilt.sh
+
+      - name: Build tgfx from source (no prebuilt for this submodule commit)
+        if: steps.prebuilt.outcome == 'failure'
+        env:
+          # The fork has no LFS objects; Tencent/tgfx serves the same OIDs.
+          GIT_LFS_SKIP_SMUDGE: 1
+        run: |
+          git submodule update --init --recursive packages/react-native-tgfx/cpp/third_party/tgfx
+          (cd packages/react-native-tgfx/cpp/third_party/tgfx &&
+            git config lfs.url https://github.com/Tencent/tgfx.git/info/lfs &&
+            ./install_tools.sh && ./sync_deps.sh)
+          # NDK 29's clang rejects tgfx's vendored highway, so pin RN's NDK.
+          (yes || true) | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.1.12297006" > /dev/null
+          TGFX_BACKENDS=vulkan VULKAN_ABIS=x86_64 bash packages/react-native-tgfx/scripts/build-tgfx-android.sh
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version: 17
+
+      - name: Restore Gradle/CMake cache
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            apps/example/android/.gradle
+            apps/example/android/app/.cxx
+          key: ${{ runner.os }}-gradle-x86_64-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', '**/CMakeLists.txt', '**/*.cmake', 'bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-x86_64-
+
+      - name: Build the example debug APK
+        working-directory: apps/example/android
+        run: ./gradlew :app:assembleDebug -x lint --no-daemon --build-cache -PreactNativeArchitectures=x86_64
+
+      - name: Run Harness E2E tests
+        uses: callstackincubator/react-native-harness@v1.4.0
+        with:
+          runner: ci-emu
+          projectRoot: apps/example
+          app: android/app/build/outputs/apk/debug/app-debug.apk
+          packageManager: bun
+
+      # Written fresh on every run (see the ci-emu runner), so this is the only
+      # place to see what the emulator drew.
+      - name: Upload emulator snapshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: harness-android-snapshots
+          path: apps/example/src/__image_snapshots__/ci-emu
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Print native crash reports
+        if: failure()
+        working-directory: apps/example
+        run: |
+          [ -d .harness/crash-reports ] || exit 0
+          find .harness/crash-reports -type f | sort | while read -r report; do
+            echo "::group::$report"
+            cat "$report"
+            echo "::endgroup::"
+          done

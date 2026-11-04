@@ -6,7 +6,10 @@ import { NodeType, type Node } from '../reconciler/types'
 import type { FlagBlock } from '../reanimated/slotFlags'
 
 /** A SharedValue whose `.value` read is a cross-runtime hop on Reanimated 4: count them. */
-function shared(value: number): { sv: { value: number; _isReanimatedSharedValue: true }; reads: () => number } {
+function shared(value: number): {
+  sv: { value: number; _isReanimatedSharedValue: true }
+  reads: () => number
+} {
   let reads = 0
   const sv = {
     _isReanimatedSharedValue: true as const,
@@ -35,7 +38,11 @@ test('a commit snapshots an animating slot from the mirror, not from .value', ()
     words.push(new Float64Array(buffer))
   })
   const roots = [
-    { type: NodeType.Circle, props: { cx: x.sv, cy: y.sv, r: 1, color: '#fff' }, children: [] },
+    {
+      type: NodeType.Circle,
+      props: { cx: x.sv, cy: y.sv, r: 1, color: '#fff' },
+      children: [],
+    },
   ] as Node[]
   container.setRootDirect(roots)
   // First commit: nothing mirrored yet, so the literals come from .value.
@@ -54,7 +61,11 @@ test('a commit snapshots an animating slot from the mirror, not from .value', ()
   // A value this container has never seen is read once.
   const z = shared(9)
   container.setRootDirect([
-    { type: NodeType.Circle, props: { cx: x.sv, cy: z.sv, r: 1, color: '#fff' }, children: [] },
+    {
+      type: NodeType.Circle,
+      props: { cx: x.sv, cy: z.sv, r: 1, color: '#fff' },
+      children: [],
+    },
   ] as Node[])
   expect(Array.from(words[3]!.subarray(5, 7))).toEqual([50, 9])
   expect(x.reads()).toBe(1)
@@ -67,7 +78,11 @@ test('a JS-thread push takes mirrored values the same way', () => {
   const container = new TgfxContainer(() => {})
   container.onValues = (values) => pushed.push(values.slice())
   container.setRootDirect([
-    { type: NodeType.Rect, props: { x: x.sv, y: 0, width: 1, height: 1 }, children: [] },
+    {
+      type: NodeType.Rect,
+      props: { x: x.sv, y: 0, width: 1, height: 1 },
+      children: [],
+    },
   ] as Node[])
   container.mirror = { values: [x.sv], block: block([7], true) }
   const before = x.reads()
@@ -86,7 +101,11 @@ test('with a driver to follow, an unseen mutable is deferred and the program fla
   const pushed: number[][] = []
   container.onValues = (values) => pushed.push(values.slice())
   container.setRootDirect([
-    { type: NodeType.Rect, props: { x: x.sv, y: 0, width: 1, height: 1 }, children: [] },
+    {
+      type: NodeType.Rect,
+      props: { x: x.sv, y: 0, width: 1, height: 1 },
+      children: [],
+    },
   ] as Node[])
   expect(x.reads()).toBe(0)
   expect(container.unresolved).toBe(true)

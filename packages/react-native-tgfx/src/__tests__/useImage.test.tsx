@@ -117,11 +117,22 @@ test('a bundled asset resolving to a bare path is opened as a file', async () =>
   expect(made[0]!.arg).toBe('/var/app/assets/pic.png')
 })
 
-// A JPEG payload starts "/9j/", so a leading slash cannot mean "path" here.
+test('an absolute path, as save() writes, is opened as a file', async () => {
+  await mount('/data/user/0/app/cache/pic.png')
+  expect(made[0]!.via).toBe('fromFile')
+  expect(made[0]!.arg).toBe('/data/user/0/app/cache/pic.png')
+})
+
+// A JPEG payload starts "/9j/", so a leading slash alone cannot mean "path".
 test('a raw base64 source goes to the base64 path even when it starts with /', async () => {
   await mount('/9j/4AAQSkZJRg==')
   expect(made[0]!.via).toBe('fromBase64')
   expect(made[0]!.arg).toBe('/9j/4AAQSkZJRg==')
+})
+
+test('line-wrapped base64 that starts with / is still base64', async () => {
+  await mount('/9j/4AAQ\nSkZJRg==')
+  expect(made[0]!.via).toBe('fromBase64')
 })
 
 test('a data: URI is decoded from its payload, not its whole URI', async () => {

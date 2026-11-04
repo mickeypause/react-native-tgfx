@@ -76,3 +76,7 @@ yarn-error.log
 
 # React Native Harness generated manifest
 .harness/
+
+# Baselines the CI runners write on every run (harness-*.yml); never committed
+src/__image_snapshots__/ci-emu/
+src/__image_snapshots__/ios-sim/

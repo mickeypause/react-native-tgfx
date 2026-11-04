@@ -436,7 +436,7 @@ Placement place(const std::vector<TextRun>& runs, const TextSpec& spec,
     if (i > 0) {
       baseline += step;
     }
-    float x = spec.align == TextAlign::Center ? (box - line.width) / 2
+    float x = spec.align == TextAlign::Center  ? (box - line.width) / 2
               : spec.align == TextAlign::Right ? box - line.width
                                                : 0;
     LineMetrics metrics;

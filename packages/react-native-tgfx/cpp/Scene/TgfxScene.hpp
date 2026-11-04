@@ -40,7 +40,13 @@ namespace tgfxrn {
 inline constexpr double kSceneVersion = 31;
 
 /// How an image is scaled into its destination rect; see fitRects() in TgfxScene.cpp.
-enum class Fit { Fill = 0, Contain, Cover, FitWidth, FitHeight, None, ScaleDown };
+enum class Fit { Fill = 0,
+                 Contain,
+                 Cover,
+                 FitWidth,
+                 FitHeight,
+                 None,
+                 ScaleDown };
 
 struct SceneReader;
 
@@ -342,8 +348,21 @@ struct LayerContent {
 
 struct DrawCmd {
   enum Kind {
-    Group, Rect, RRect, Oval, Circle, Line, Path, Image, Text, Fill, CameraFrame, Mask, Atlas,
-    Vertices, Backdrop
+    Group,
+    Rect,
+    RRect,
+    Oval,
+    Circle,
+    Line,
+    Path,
+    Image,
+    Text,
+    Fill,
+    CameraFrame,
+    Mask,
+    Atlas,
+    Vertices,
+    Backdrop
   };
 
   /// Backdrop only: the panel's shape and the style's parameters.
@@ -359,7 +378,6 @@ struct DrawCmd {
   AnimF splay;
   AnimF lightAngle;
   AnimF lightIntensity;
-
 
   /// Mask only: the subtree whose alpha or luminance cuts `children` down.
   std::vector<DrawCmd> maskChildren;

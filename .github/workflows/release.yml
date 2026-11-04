@@ -13,6 +13,10 @@ on:
           - major
           - alpha
         default: alpha
+      reuse-build-run-id:
+        description: 'Skip the tgfx builds and reuse the artifacts of this earlier run id (kept 3 days)'
+        type: string
+        default: ''
 
 defaults:
   run:
@@ -21,6 +25,7 @@ defaults:
 jobs:
   build-tgfx:
     name: Build tgfx (${{ matrix.platform }})
+    if: inputs.reuse-build-run-id == ''
     runs-on: macos-15
     permissions:
       contents: read
@@ -87,10 +92,12 @@ jobs:
   release:
     name: Publish to npm (OIDC) and create GitHub release
     needs: build-tgfx
+    if: ${{ !cancelled() && (needs.build-tgfx.result == 'success' || needs.build-tgfx.result == 'skipped') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
       id-token: write
+      actions: read
     steps:
       # Full history for the changelog; GITHUB_TOKEN stays persisted for release-it's push.
       - uses: actions/checkout@v6
@@ -98,15 +105,18 @@ jobs:
           fetch-depth: 0
           submodules: recursive
 
-
       - uses: actions/download-artifact@v4
         with:
           name: tgfx-ios
+          run-id: ${{ inputs.reuse-build-run-id || github.run_id }}
+          github-token: ${{ github.token }}
           path: packages/react-native-tgfx/ios/libs
 
       - uses: actions/download-artifact@v4
         with:
           name: tgfx-android
+          run-id: ${{ inputs.reuse-build-run-id || github.run_id }}
+          github-token: ${{ github.token }}
           path: packages/react-native-tgfx/android
 
       - name: Verify the prebuilt tgfx libraries
@@ -156,7 +166,8 @@ jobs:
           VERSION=$(./node_modules/.bin/release-it --release-version --ci $ARGS | tail -n1)
           echo "Releasing $VERSION"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "args=$ARGS" >> "$GITHUB_OUTPUT"
+          # The increment is already baked into VERSION; only the pre-release flag (npm dist-tag) carries over.
+          [[ "$RELEASE_TYPE" == "alpha" ]] && echo "args=$ARGS" >> "$GITHUB_OUTPUT" || true
 
       - name: Release ${{ steps.version.outputs.version }}
         env:

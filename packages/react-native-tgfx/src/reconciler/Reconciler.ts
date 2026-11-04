@@ -209,9 +209,17 @@ export class TgfxRoot {
   }
 
   unmount(): void {
-    reconciler.updateContainer(null, this.root, null, null)
-    if (this.container.root.length > 0) {
-      this.container.setRootDirect([])
+    // Flushed muted, as in setDirect: by now Fabric may have recycled the view
+    // into the next canvas, and this teardown's empty scene would blank it.
+    this.container.muted = true
+    try {
+      reconciler.updateContainerSync(null, this.root, null, null)
+      reconciler.flushSyncWork()
+      if (this.container.root.length > 0) {
+        this.container.setRootDirect([])
+      }
+    } finally {
+      this.container.muted = false
     }
   }
 }

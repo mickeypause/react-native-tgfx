@@ -493,7 +493,7 @@ tgfxrn::SnapshotRequest encodeRequest(const std::optional<std::string>& format,
 }
 
 std::shared_ptr<::tgfx::Data> encodeRegisteredImage(int32_t handle,
-                                                  const tgfxrn::SnapshotRequest& request) {
+                                                    const tgfxrn::SnapshotRequest& request) {
   auto raster = tgfxrn::rasterizeRegisteredImage(handle);
   std::shared_ptr<::tgfx::Data> out;
   std::string error;

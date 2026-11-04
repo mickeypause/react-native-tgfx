@@ -34,10 +34,10 @@ bundle install && (cd ios && bundle exec pod install) && bun run ios
 "Unicode Normalization not appropriate for ASCII-8BIT". Prefix it with
 `LANG=en_US.UTF-8` if your shell does not set one.
 
-The app has three screens behind the tab bar: the feature gallery, face blur,
-and the camera effects. The two camera screens ask for the camera permission
-the first time they are opened, and fall back to a message when the device has
-no camera — an emulator without a webcam included.
+The tab bar switches between the feature gallery, the camera effects and the
+other demos. The camera screen asks for the camera permission the first time it
+is opened, and falls back to a message when the device has no camera - an
+emulator without a webcam included.
 
 ## Running the tests
 
@@ -93,6 +93,22 @@ Run the image suites on a real phone. On the `Pixel_8_API_35` AVD's software
 renderer every image-backed scene comes back blank, so those tests fail there
 by design rather than writing an empty baseline.
 
+## CI
+
+Each workflow runs on the pull requests whose paths it covers, and on `main`.
+
+- `lint-cpp.yml` - clang-format over the C++ and Objective-C++ in `packages/`.
+  Fix with `bun lint-cpp`, using the version `scripts/clang-format.sh` pins
+  (`pipx install clang-format==23.1.3`).
+- `lint-typescript.yml` - `tsc`, eslint and prettier in each package, eslint in
+  `apps/example` and `apps/benchmark`.
+- `harness-android.yml` - every harness suite on a hosted emulator (`ci-emu`).
+- `harness-ios.yml` - every harness suite on a simulator (`ios-sim`), x86_64
+  build since ML Kit has no arm64 simulator slice.
+
+The CI runners write their baselines fresh on each run and upload them as an
+artifact. Committed baselines are for the `android` phone only.
+
 ## The memory-leak gate
 
 `scripts/leak-check.mjs` drives `apps/example/src/leakSoak.harness.tsx` — ~100s
@@ -111,12 +127,9 @@ node scripts/leak-check.mjs        # device from rn-harness.config.mjs, debug bu
 
 The soak is excluded from the default `bun run harness` run
 (`testPathIgnorePatterns` in `jest.harness.config.mjs`); the script re-enables
-it. In CI, the `leak` job in `ci.yml` runs the same script on a hosted
-emulator via `--runner ci-emu` — dispatch-only,
-because it costs an emulator hour. It catches allocation-path leaks (the
-registries, the scene, the JSI boundary); GPU-side growth needs the real
-device, since the hosted emulator's software renderer draws image scenes
-blank.
+it. It does not run in CI. `--runner ci-emu` runs it on the CI emulator
+instead of the phone, which catches allocation-path leaks (the registries, the
+scene, the JSI boundary) but not GPU-side growth.
 
 ## Imperative APIs first
 

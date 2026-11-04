@@ -15,7 +15,9 @@ class TextBlob;
 
 namespace tgfxrn {
 
-enum class TextAlign { Left = 0, Center = 1, Right = 2 };
+enum class TextAlign { Left = 0,
+                       Center = 1,
+                       Right = 2 };
 
 struct TextRun {
   std::string text;

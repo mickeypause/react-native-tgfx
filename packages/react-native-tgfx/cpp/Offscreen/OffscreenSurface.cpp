@@ -458,5 +458,4 @@ void OffscreenSurface::renderNow() {
   }
 }
 
-
 }  // namespace tgfxrn

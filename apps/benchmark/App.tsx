@@ -129,22 +129,6 @@ const PATHS_900 = makePaths(900, 30);
 function pathsFor(scene: string) {
   return scene === 'paths100' ? PATHS_100 : scene === 'paths300' ? PATHS_300 : PATHS_900;
 }
-const UNUSED_PATHS = Array.from({ length: 0 }, (_, i) => {
-  const col = i % 30;
-  const row = Math.floor(i / 30);
-  const x = col * (W / 30);
-  const y = row * (H / 30);
-  const w = W / 30 - 1;
-  const h = H / 30 - 1;
-  return {
-    d:
-      `M${x} ${y + h / 2}` +
-      `C${x + w / 4} ${y}, ${x + w / 2} ${y + h}, ${x + w} ${y + h / 2}` +
-      `C${x + w * 0.75} ${y + h}, ${x + w / 2} ${y}, ${x} ${y + h / 2}Z`,
-    color: PALETTE[i % PALETTE.length],
-    stroked: i % 2 === 0,
-  };
-});
 
 const TEXTS = Array.from({ length: 6000 }, (_, i) => ({
   x: (i % 25) * (W / 25),

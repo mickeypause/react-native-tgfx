@@ -20,11 +20,10 @@ import type { TgfxImage } from './TgfxImage.nitro'
  * The colour space is a `createOffscreenSurface` option rather than a method:
  * a surface's space is fixed at creation, exactly like a view's.
  */
-export interface TgfxOffscreenSurface
-  extends HybridObject<{
-    ios: 'c++'
-    android: 'c++'
-  }> {
+export interface TgfxOffscreenSurface extends HybridObject<{
+  ios: 'c++'
+  android: 'c++'
+}> {
   /** Logical points, as given at creation. */
   readonly width: number
   readonly height: number
@@ -82,11 +81,10 @@ export interface TgfxOffscreenSurface
  * Creates {@link TgfxOffscreenSurface}s. Use the exported
  * `createOffscreenSurface` wrapper, which validates and applies defaults.
  */
-export interface TgfxOffscreenSurfaceFactory
-  extends HybridObject<{
-    ios: 'c++'
-    android: 'c++'
-  }> {
+export interface TgfxOffscreenSurfaceFactory extends HybridObject<{
+  ios: 'c++'
+  android: 'c++'
+}> {
   create(
     width: number,
     height: number,

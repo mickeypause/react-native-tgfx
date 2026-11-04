@@ -70,7 +70,7 @@ ImageHandle ImageRegistry::add(std::shared_ptr<tgfx::ImageCodec> codec) {
 }
 
 ImageHandle ImageRegistry::addExternal(std::shared_ptr<tgfx::Image> image, size_t ownedBytes,
-                                      bool live) {
+                                       bool live) {
   if (image == nullptr) {
     return {};
   }
@@ -169,7 +169,7 @@ std::shared_ptr<tgfx::Image> ImageRegistry::acquire(int32_t handle, bool* extern
     return entry.decoded;
   }
   if (entry.decoded == nullptr) {
-  // Only after the budget dropped these pixels. The caller is the render thread, so the worker re-decodes.
+    // Only after the budget dropped these pixels. The caller is the render thread, so the worker re-decodes.
     scheduleDecodeLocked(handle);
     return nullptr;
   }

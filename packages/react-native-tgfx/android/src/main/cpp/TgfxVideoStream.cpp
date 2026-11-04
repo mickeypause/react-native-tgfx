@@ -500,7 +500,7 @@ JNIEXPORT void JNICALL Java_com_margelo_nitro_tgfx_TgfxNative_videoStreamNotify(
 }
 
 JNIEXPORT jint JNICALL Java_com_margelo_nitro_tgfx_TgfxNative_videoStreamUpdate(JNIEnv*, jobject,
-                                                                               jlong ptr) {
+                                                                                jlong ptr) {
   auto stream = asStream(ptr);
   if (stream == nullptr) {
     return 0;
@@ -529,7 +529,7 @@ JNIEXPORT jint JNICALL Java_com_margelo_nitro_tgfx_TgfxNative_videoStreamUpdate(
  * deep inside tgfx. Nothing is drawn until videoStreamRebuild() lands.
  */
 JNIEXPORT void JNICALL Java_com_margelo_nitro_tgfx_TgfxNative_videoStreamRelease(JNIEnv*, jobject,
-                                                                                jlong ptr) {
+                                                                                 jlong ptr) {
   auto stream = asStream(ptr);
   if (stream == nullptr) {
     return;
@@ -566,7 +566,7 @@ JNIEXPORT jobject JNICALL Java_com_margelo_nitro_tgfx_TgfxNative_videoStreamRebu
 }
 
 JNIEXPORT void JNICALL Java_com_margelo_nitro_tgfx_TgfxNative_videoStreamDestroy(JNIEnv*, jobject,
-                                                                                jlong ptr) {
+                                                                                 jlong ptr) {
   auto* holder = asHolder(ptr);
   if (holder == nullptr) {
     return;

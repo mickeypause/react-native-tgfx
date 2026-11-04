@@ -51,8 +51,12 @@ uint16_t beU16(const uint8_t* bytes) {
 
 /// Where a font file can live. Android first, then the desktop hosts. No file names by design.
 constexpr std::array<const char*, 6> kFontDirs = {
-    "/system/fonts",   "/product/fonts", "/system/font",
-    "/data/fonts",     "/System/Library/Fonts", "/Library/Fonts",
+    "/system/fonts",
+    "/product/fonts",
+    "/system/font",
+    "/data/fonts",
+    "/System/Library/Fonts",
+    "/Library/Fonts",
 };
 
 bool isFontFile(const std::string& name) {

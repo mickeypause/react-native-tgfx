@@ -335,7 +335,9 @@ export function createHandle(): NodeHandle {
   const boxedFlags = flagBlock?.boxed ?? null
   const flagBytes = flagBlock?.bytes ?? null
   const live = (at: number, initial: number): LiveValue =>
-    flagBlock != null ? liveFromBlock(flagBlock, at, initial) : makeLive(initial)
+    flagBlock != null
+      ? liveFromBlock(flagBlock, at, initial)
+      : makeLive(initial)
   const liveString = (at: number, initial: string): LiveString =>
     flagBlock != null
       ? liveStringFromBlock(flagBlock, at, initial)

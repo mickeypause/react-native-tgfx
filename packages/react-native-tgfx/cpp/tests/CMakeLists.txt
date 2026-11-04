@@ -14,6 +14,12 @@ add_subdirectory(${TGFX_DIR} ${CMAKE_BINARY_DIR}/tgfx)
 
 add_executable(SceneTest SceneTest.cpp ../Scene/TgfxScene.cpp ../Path/SvgPath.cpp ../Image/SvgImage.cpp ../Image/ImageRegistry.cpp ../Offscreen/OffscreenRender.cpp ../Offscreen/OffscreenSurface.cpp ../Export/PdfExport.cpp ../Export/SvgExport.cpp
                ../TextLayout/FontRegistry.cpp ../TextLayout/TextLayout.cpp ../TextLayout/TextShaping.cpp ../Path/PathOps.cpp ../Buffers/BufferRegistry.cpp)
+if(APPLE)
+    enable_language(OBJCXX)
+    set_property(TARGET SceneTest PROPERTY OBJCXX_STANDARD 20)
+    target_sources(SceneTest PRIVATE ../../ios/TgfxAutoreleasePool.mm)
+    target_link_libraries(SceneTest "-framework Foundation")
+endif()
 # tgfx's src too: the EXIF test names JpegCodec rather than going through
 # ImageCodec::MakeFrom, which would fall through to the platform decoder and
 # prove nothing about the embedded one.

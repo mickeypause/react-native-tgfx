@@ -360,7 +360,7 @@ Java_com_margelo_nitro_tgfx_TgfxNative_hitTest(JNIEnv* env, jobject, jlong ptr, 
 
 JNIEXPORT jboolean JNICALL
 Java_com_margelo_nitro_tgfx_TgfxNative_setViewport(JNIEnv*, jobject, jlong ptr,
-                                                  jfloat zoom, jfloat x, jfloat y) {
+                                                   jfloat zoom, jfloat x, jfloat y) {
   auto* view = asView(ptr);
   if (view == nullptr) {
     return JNI_FALSE;
@@ -370,7 +370,7 @@ Java_com_margelo_nitro_tgfx_TgfxNative_setViewport(JNIEnv*, jobject, jlong ptr,
 
 JNIEXPORT void JNICALL
 Java_com_margelo_nitro_tgfx_TgfxNative_setColorSpace(JNIEnv*, jobject, jlong ptr,
-                                                    jboolean displayP3) {
+                                                     jboolean displayP3) {
   auto* view = asView(ptr);
   if (view != nullptr) {
     view->renderer.setColorSpace(displayP3 == JNI_TRUE);
@@ -401,8 +401,9 @@ Java_com_margelo_nitro_tgfx_TgfxNative_setWakeTarget(JNIEnv* env, jobject, jlong
   if (view->requestRender == nullptr) {
     // A pending NoSuchMethodError would abort the next JNI call instead.
     env->ExceptionClear();
-    TGFXRN_LOGW("TgfxRenderTarget.requestRender() not found; a swapped hardware "
-                "buffer will not schedule a draw");
+    TGFXRN_LOGW(
+        "TgfxRenderTarget.requestRender() not found; a swapped hardware "
+        "buffer will not schedule a draw");
     return;
   }
   view->renderer.setWakeCallback([view] {

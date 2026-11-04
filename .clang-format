@@ -1,0 +1,28 @@
+# Checked by .github/workflows/lint-cpp.yml; run `bun lint-cpp` to apply.
+# Written for the clang-format version pinned in scripts/clang-format.sh.
+#
+# Tuned to the code as it was written rather than a stock style, so adopting it
+# moved few lines. ColumnLimit 0 keeps the author's line breaks: wrapping is a
+# review call here, not a formatter's.
+BasedOnStyle: Google
+Standard: c++20
+ColumnLimit: 0
+
+# Pointer and reference alignment
+DerivePointerAlignment: false
+PointerAlignment: Left
+
+# Short blocks
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortEnumsOnASingleLine: true
+
+# Includes and comments are ordered and worded by hand
+IncludeBlocks: Preserve
+SortIncludes: Never
+ReflowComments: false
+SpacesBeforeTrailingComments: 2
+
+AccessModifierOffset: -1

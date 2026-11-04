@@ -152,8 +152,24 @@ std::atomic<size_t> gFilterBuilds{0};
 
 /// Node kinds, mirrored from src/compiler/writer.ts.
 enum Kind {
-  KGroup = 0, KRect, KRRect, KOval, KCircle, KLine, KPath, KImage, KText, KFill,
-  KTextPath, KCameraFrame, KGlyphs, KGroupLayer, KMask, KAtlas, KVertices, KBackdrop
+  KGroup = 0,
+  KRect,
+  KRRect,
+  KOval,
+  KCircle,
+  KLine,
+  KPath,
+  KImage,
+  KText,
+  KFill,
+  KTextPath,
+  KCameraFrame,
+  KGlyphs,
+  KGroupLayer,
+  KMask,
+  KAtlas,
+  KVertices,
+  KBackdrop
 };
 
 /// Sampling codes, mirrored from src/compiler/writer.ts.
@@ -243,13 +259,15 @@ FitRects fitRects(Fit fit, const tgfx::Rect& source, const tgfx::Rect& dest) {
       sh = dh = std::min(ih, oh);
       break;
     case Fit::ScaleDown:
-      if (dh > ih) {
-        dw = ih * (iw / ih);
-        dh = ih;
+      dw = iw;
+      dh = ih;
+      if (dh > oh) {
+        dw = oh * (iw / ih);
+        dh = oh;
       }
-      if (dw > iw) {
-        dh = iw / (iw / ih);
-        dw = iw;
+      if (dw > ow) {
+        dh = ow / (iw / ih);
+        dw = ow;
       }
       break;
   }
@@ -744,8 +762,8 @@ const TextLayout& TextCmd::resolve(float size,
   }
   layoutSize = size;
   layout = !glyphs.empty() ? layoutGlyphs(glyphs, spec, size)
-           : onPath          ? layoutTextOnPath(runs, spec, size, path)
-                             : layoutText(runs, spec, size);
+           : onPath        ? layoutTextOnPath(runs, spec, size, path)
+                           : layoutText(runs, spec, size);
   return layout;
 }
 
@@ -1545,8 +1563,9 @@ bool SceneRenderer::readNodeFields(SceneReader& r, DrawCmd& cmd, int depth) {
         cmd.children.push_back(std::move(child));
       }
       if (cmd.cachePicture && r.dynamic != dynamicBefore) {
-        TGFXRN_LOGW("<Group picture> holds something that resolves per frame, so it is drawn "
-                    "directly; a recording would freeze it");
+        TGFXRN_LOGW(
+            "<Group picture> holds something that resolves per frame, so it is drawn "
+            "directly; a recording would freeze it");
         cmd.cachePicture = false;
       }
       if (r.ok) {
@@ -1577,8 +1596,9 @@ bool SceneRenderer::readNodeFields(SceneReader& r, DrawCmd& cmd, int depth) {
         cmd.children.push_back(std::move(child));
       }
       if (cmd.cachePicture && r.dynamic != dynamicBefore) {
-        TGFXRN_LOGW("<Group picture> holds something that resolves per frame, so it is drawn "
-                    "directly; a recording would freeze it");
+        TGFXRN_LOGW(
+            "<Group picture> holds something that resolves per frame, so it is drawn "
+            "directly; a recording would freeze it");
         cmd.cachePicture = false;
       }
       return r.ok;
@@ -1608,8 +1628,9 @@ bool SceneRenderer::readNodeFields(SceneReader& r, DrawCmd& cmd, int depth) {
         cmd.children.push_back(std::move(child));
       }
       if (cmd.cachePicture && r.dynamic != dynamicBefore) {
-        TGFXRN_LOGW("<Group picture> holds something that resolves per frame, so it is drawn "
-                    "directly; a recording would freeze it");
+        TGFXRN_LOGW(
+            "<Group picture> holds something that resolves per frame, so it is drawn "
+            "directly; a recording would freeze it");
         cmd.cachePicture = false;
       }
       return r.ok;
@@ -2048,7 +2069,6 @@ void SceneRenderer::setScene(std::span<const double> words,
   usesText_ = text;
   usesBackdrop_ = backdrop;
 }
-
 
 namespace {
 
@@ -3097,8 +3117,7 @@ void SceneRenderer::addLayerContent(tgfx::Layer* layer, const DrawCmd& owner, si
   bool fills = false;
   if (body != nullptr) {
     still = body->layerAlpha.slot < 0 && body->grain == nullptr &&
-            std::none_of(body->children.begin(), body->children.end(),
-                         [](const DrawCmd& child) { return child.dynamic; });
+            std::none_of(body->children.begin(), body->children.end(), [](const DrawCmd& child) { return child.dynamic; });
     fills = body->fills;
   } else {
     for (const auto* cmd : run) {

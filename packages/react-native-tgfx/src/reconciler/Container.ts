@@ -65,7 +65,8 @@ export class TgfxContainer implements NodeOwner {
    * byte 0 marks the mirror written. Block slots are never taken from it: a
    * JS-thread write to one fires no driver, so the mirror can trail it.
    */
-  mirror: { values: MaybeSharedValue<unknown>[]; block: FlagBlock } | null = null
+  mirror: { values: MaybeSharedValue<unknown>[]; block: FlagBlock } | null =
+    null
   /// What the last program wrote per SharedValue: exactly what native draws
   /// until the driver's first push, so a commit before that push reuses it.
   private lastLiterals: Map<object, number> | null = null

@@ -49,12 +49,12 @@ namespace {
 
 int failures = 0;
 
-#define CHECK(cond)                                                        \
-  do {                                                                     \
-    if (!(cond)) {                                                         \
-      std::printf("  FAIL %s:%d: %s\n", __FILE__, __LINE__, #cond);        \
-      failures++;                                                          \
-    }                                                                      \
+#define CHECK(cond)                                                 \
+  do {                                                              \
+    if (!(cond)) {                                                  \
+      std::printf("  FAIL %s:%d: %s\n", __FILE__, __LINE__, #cond); \
+      failures++;                                                   \
+    }                                                               \
   } while (0)
 
 tgfxrn::TextRun run(std::string text) {
@@ -686,7 +686,7 @@ void writeTextNode(Writer& w, double fontSize, int fontSizeSlot, int textIndex =
   w.push(1);  // font family string index
   w.push(weight);
   w.push(style);  // 1 italic, 2 faux bold, 4 faux italic
-  w.push(0);  // letterSpacing
+  w.push(0);      // letterSpacing
   writeRun(w, textIndex, 2, 0, runItalic);
   w.push(wrapWidth);
   w.push(align);
@@ -846,9 +846,9 @@ void aChildShaderSamplesWhereItIsAsked() {
   // repeat/repeat, nearest: the same child both paths draw.
   const std::vector<double> child = {7, static_cast<double>(image.handle), 1, 1, 0, 0};
   const std::vector<std::string> strings = {
-      "return TGFX_CHILD_0(fragCoord);",                    // 0
-      "",                                                   // 1: no preamble
-      "return TGFX_CHILD_0(fragCoord + vec2(1.0, 0.0));",   // 2: shifted a texel
+      "return TGFX_CHILD_0(fragCoord);",                   // 0
+      "",                                                  // 1: no preamble
+      "return TGFX_CHILD_0(fragCoord + vec2(1.0, 0.0));",  // 2: shifted a texel
   };
 
   auto draw = [&](int body) {
@@ -1057,8 +1057,8 @@ void aGroupClipConfinesItsSubtree() {
   };
 
   auto clipped = scene(1, false);
-  CHECK(opaqueAt(clipped, 16, 16));    // inside the clip
-  CHECK(!opaqueAt(clipped, 2, 2));     // outside it
+  CHECK(opaqueAt(clipped, 16, 16));  // inside the clip
+  CHECK(!opaqueAt(clipped, 2, 2));   // outside it
   CHECK(!opaqueAt(clipped, 40, 40));
 
   auto inverted = scene(1, true);
@@ -1085,7 +1085,7 @@ void aLayerCompositesTheSubtreeOnce() {
     w.push(layer ? 13 : 0);
     w.push(0);
     if (layer) {
-      w.push(4);       // layer, no clip
+      w.push(4);  // layer, no clip
       w.pushAnim(0.5);
     }
     w.push(2);
@@ -1188,9 +1188,9 @@ void pathEffectsReshapeTheGeometry() {
     return render(w.finish(),
                   {"M4 4 L60 4 L60 60 L4 60 Z M20 20 L44 20 L44 44 L20 44 Z"}, {});
   };
-  CHECK(!opaqueAt(donut(8, {}), 32, 32));          // the hole is open
-  CHECK(opaqueAt(donut(0, {}), 32, 32));           // winding fills it
-  CHECK(!opaqueAt(donut(8 | 4, {6}), 32, 32));     // still open through a corner effect
+  CHECK(!opaqueAt(donut(8, {}), 32, 32));                // the hole is open
+  CHECK(opaqueAt(donut(0, {}), 32, 32));                 // winding fills it
+  CHECK(!opaqueAt(donut(8 | 4, {6}), 32, 32));           // still open through a corner effect
   CHECK(!opaqueAt(donut(8 | 2, {2, 6, 6, 0}), 32, 32));  // and through a dash
 
   // An animated trim re-applies per frame: the same program, two different values.
@@ -1239,8 +1239,8 @@ void pathEffectsReshapeTheGeometry() {
   auto atZero = drawFrame(marching, {0.0});
   auto atFour = drawFrame(marching, {4.0});
   CHECK(anyPixelSet(atZero));
-  CHECK(atZero != atFour);              // the phase still moves
-  CHECK(!opaqueAt(atZero, 55, 32));     // and the baked trim still bites
+  CHECK(atZero != atFour);           // the phase still moves
+  CHECK(!opaqueAt(atZero, 55, 32));  // and the baked trim still bites
 }
 
 /// Luma and the inner shadow: the filter kinds #179 was missing.
@@ -1299,8 +1299,8 @@ void aThresholdCutsAlphaAndAColorFilterCanFollowAnImageFilter() {
   // A half-transparent fill: below the threshold it disappears, above it goes solid.
   const uint32_t half = 0x80336699;
   auto plain = shape({-1}, {-1}, half);
-  auto cut = shape({3, 0.9}, {-1}, half);      // 0.5 alpha < 0.9 => transparent
-  auto kept = shape({3, 0.25}, {-1}, half);    // 0.5 alpha >= 0.25 => opaque
+  auto cut = shape({3, 0.9}, {-1}, half);    // 0.5 alpha < 0.9 => transparent
+  auto kept = shape({3, 0.25}, {-1}, half);  // 0.5 alpha >= 0.25 => opaque
   CHECK(!opaqueAt(cut, 32, 32));
   CHECK(kept != plain);
   // The colour, not just "something is there". This filter shipped once before
@@ -1324,11 +1324,11 @@ void aThresholdCutsAlphaAndAColorFilterCanFollowAnImageFilter() {
   live.push(0);
   live.push(0);
   live.pushAnim(1);
-  live.push(3);         // blend srcOver
-  live.push(3);         // colour filter kind: alphaThreshold
+  live.push(3);           // blend srcOver
+  live.push(3);           // colour filter kind: alphaThreshold
   live.pushAnim(0.9, 0);  // threshold, slot 0
-  live.push(-1);        // no image filter
-  live.push(-1);        // no shader
+  live.push(-1);          // no image filter
+  live.push(-1);          // no shader
   auto program = live.finish();
   CHECK(!opaqueAt(render(program, {}, {0.9}), 32, 32));
   CHECK(opaqueAt(render(program, {}, {0.25}), 32, 32));
@@ -1548,14 +1548,14 @@ void aMaskCutsItsContentDown() {
     w.push(1);
     w.push(14);  // Mask
     w.push(luminance);
-    w.push(1);   // one mask node: a rect over the left half
+    w.push(1);  // one mask node: a rect over the left half
     w.push(1);
     w.pushAnim(0);
     w.pushAnim(0);
     w.pushAnim(32);
     w.pushAnim(64);
     w.pushPaint(maskColor, false);
-    w.push(1);   // one content node: a rect over the whole canvas
+    w.push(1);  // one content node: a rect over the whole canvas
     w.push(1);
     w.pushAnim(0);
     w.pushAnim(0);
@@ -1566,8 +1566,8 @@ void aMaskCutsItsContentDown() {
   };
 
   auto alpha = scene(0, 0xffffffff);
-  CHECK(opaqueAt(alpha, 16, 32));    // under the mask, the content survives
-  CHECK(!opaqueAt(alpha, 48, 32));   // outside it, nothing is left
+  CHECK(opaqueAt(alpha, 16, 32));   // under the mask, the content survives
+  CHECK(!opaqueAt(alpha, 48, 32));  // outside it, nothing is left
 
   // A transparent mask keeps nothing, whatever its colour.
   CHECK(!anyPixelSet(scene(0, 0x00ffffff)));
@@ -1762,7 +1762,6 @@ void aLiveHandleRefusesToBeDerivedFrom() {
   CHECK(registry.sourceImage(frame.handle) == nullptr);
 }
 
-
 void fitModesLetterboxAndCrop() {
   auto image = registerSolid(cellColor(7), 4, 2);
   auto draw = [&](int fit) {
@@ -1773,14 +1772,14 @@ void fitModesLetterboxAndCrop() {
   };
 
   auto contain = draw(1);
-  CHECK(opaqueAt(contain, 16, 16));   // the letterboxed band
-  CHECK(!opaqueAt(contain, 16, 2));   // above it, untouched
+  CHECK(opaqueAt(contain, 16, 16));  // the letterboxed band
+  CHECK(!opaqueAt(contain, 16, 2));  // above it, untouched
   CHECK(!opaqueAt(contain, 16, 30));
 
   auto cover = draw(2);
-  CHECK(opaqueAt(cover, 16, 2));      // fills the box
+  CHECK(opaqueAt(cover, 16, 2));  // fills the box
   CHECK(opaqueAt(cover, 16, 30));
-  CHECK(!opaqueAt(cover, 40, 16));    // but never past it
+  CHECK(!opaqueAt(cover, 40, 16));  // but never past it
 
   auto fill = draw(0);
   CHECK(opaqueAt(fill, 1, 1) && opaqueAt(fill, 30, 30));
@@ -2207,7 +2206,7 @@ void aBlendModeSurvivesAnImageFilter() {
       blur = {0, sigma, sigma, 3};
     }
     w.pushFilteredPaint(0xffff00ff, {24, {-1}, blur});  // BlendMode::Multiply
-    w.push(1);  // Rect: an ordinary green one, drawn after the layered node
+    w.push(1);                                          // Rect: an ordinary green one, drawn after the layered node
     w.pushAnim(44);
     w.pushAnim(44);
     w.pushAnim(16);
@@ -2376,7 +2375,6 @@ void filtersAreBuiltOnceAndNeverOnTheDrawPath() {
   CHECK(tgfxrn::filterBuildCount() == afterCompile);
 }
 
-
 /// Composition made a chain rebuildable as a unit; only the parts with a slot
 /// should actually be rebuilt. Counted, not reasoned about.
 void onlyTheAnimatedPartOfAFilterChainIsRebuilt() {
@@ -2402,10 +2400,10 @@ void onlyTheAnimatedPartOfAFilterChainIsRebuilt() {
   w.push(0);      // blur
   w.pushAnim(4, 0);
   w.pushAnim(4, 0);
-  w.push(3);      // decal
-  w.push(3);      // colorFilter in the image chain
-  w.push(2);      // luma
-  w.push(-1);     // no shader
+  w.push(3);   // decal
+  w.push(3);   // colorFilter in the image chain
+  w.push(2);   // luma
+  w.push(-1);  // no shader
   auto words = w.finish();
 
   tgfxrn::SceneRenderer renderer;
@@ -3193,8 +3191,8 @@ std::shared_ptr<tgfx::Data> exifRotatedJpeg(int width, int height) {
   // APP1: length, "Exif\0\0", then a little-endian TIFF whose one entry is Orientation = 6.
   const std::array<uint8_t, 36> app1 = {
       0xFF, 0xE1, 0x00, 0x22,                          // marker, length (34)
-      'E',  'x',  'i',  'f',  0x00, 0x00,              // Exif\0\0
-      'I',  'I',  0x2A, 0x00, 0x08, 0x00, 0x00, 0x00,  // II, 42, IFD0 at 8
+      'E', 'x', 'i', 'f', 0x00, 0x00,                  // Exif\0\0
+      'I', 'I', 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00,    // II, 42, IFD0 at 8
       0x01, 0x00,                                      // one entry
       0x12, 0x01, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00,  // Orientation, SHORT, 1
       0x06, 0x00, 0x00, 0x00,                          // = 6
@@ -4270,8 +4268,8 @@ void hitTestReportsWhatIsUnderThePoint() {
   // 23,3 sits in the circle's bounding box but outside the disc, and inside the rect.
   auto boxed = renderer.hitTest(23, 3, false, {});
   auto exact = renderer.hitTest(23, 3, true, {});
-  CHECK(boxed.size() == 5);   // the circle, then the rect
-  CHECK(exact.size() == 2);   // only the rect
+  CHECK(boxed.size() == 5);  // the circle, then the rect
+  CHECK(exact.size() == 2);  // only the rect
   CHECK(exact[0] == 1 && exact[1] == 0);
 }
 
@@ -4418,7 +4416,7 @@ void aBackdropFrostsWhatIsBeneathIt() {
     w.pushAnim(8);
     w.pushAnim(48);
     w.pushAnim(48);
-    w.push(0);           // corner radius
+    w.push(0);               // corner radius
     w.pushAnim(10);          // blur
     w.pushAnim(refraction);  // 0 is a plain blur, above 0 is glass
     w.pushAnim(20);
@@ -4531,9 +4529,9 @@ void filmGrainDustsOnlyWhatTheGroupDrew() {
   CHECK(render(program(0, 0, 4, 0), {}, {}) == plain);
 
   // Every remaining word has to reach NoiseStyle, or it is decoration.
-  CHECK(render(program(0, 0.5, 16, 0), {}, {}) != mono);   // coarser grain
-  CHECK(render(program(0, 0.5, 4, 7), {}, {}) != mono);    // a different pattern
-  CHECK(render(program(0, 0.9, 4, 0), {}, {}) != mono);    // denser
+  CHECK(render(program(0, 0.5, 16, 0), {}, {}) != mono);  // coarser grain
+  CHECK(render(program(0, 0.5, 4, 7), {}, {}) != mono);   // a different pattern
+  CHECK(render(program(0, 0.9, 4, 0), {}, {}) != mono);   // denser
   // Duo fills the complementary half too, and multi keeps the noise's own RGB.
   auto duo = render(program(1, 0.5, 4, 0), {}, {});
   auto multi = render(program(2, 0.5, 4, 0), {}, {});
@@ -4601,8 +4599,8 @@ void filmGrainAnswersToItsBlendModeAndLiveColour() {
     w.pushAnim(0, 1);    // green
     w.pushAnim(0, 2);    // blue
     w.pushAnim(1, 3);    // alpha
-    w.push(1);  // one child
-    w.push(1);  // Rect
+    w.push(1);           // one child
+    w.push(1);           // Rect
     w.pushAnim(8);
     w.pushAnim(8);
     w.pushAnim(40);
@@ -4640,7 +4638,7 @@ void filmGrainResolvesFromValueSlots() {
   w.push(13);
   w.push(0);
   w.push(16);
-  w.push(0);      // mono
+  w.push(0);  // mono
   w.pushAnim(4);
   w.pushAnim(0, 0);  // density
   w.pushAnim(0, 1);  // seed
@@ -4684,7 +4682,7 @@ void glassTakesItsLightFromTheScene() {
     w.pushAnim(8);
     w.pushAnim(48);
     w.pushAnim(48);
-    w.push(12);  // corner radius, so there is a curved edge to refract along
+    w.push(12);      // corner radius, so there is a curved edge to refract along
     w.pushAnim(10);  // blur, ignored on the glass path
     w.pushAnim(60);  // refraction: above 0 is glass
     w.pushAnim(30);  // depth
@@ -4747,15 +4745,15 @@ void theGlassMaterialResolvesFromValueSlots() {
   w.pushAnim(8);
   w.pushAnim(48);
   w.pushAnim(48);
-  w.push(12);           // corner radius, static
-  w.pushAnim(10);       // blur
-  w.pushAnim(60);       // refraction
-  w.pushAnim(30);       // depth
-  w.pushAnim(20);       // frost
-  w.pushAnim(0);        // dispersion
-  w.pushAnim(0);        // splay
-  w.pushAnim(45, 0);    // light angle, slot 0
-  w.pushAnim(50, 1);    // light intensity, slot 1
+  w.push(12);         // corner radius, static
+  w.pushAnim(10);     // blur
+  w.pushAnim(60);     // refraction
+  w.pushAnim(30);     // depth
+  w.pushAnim(20);     // frost
+  w.pushAnim(0);      // dispersion
+  w.pushAnim(0);      // splay
+  w.pushAnim(45, 0);  // light angle, slot 0
+  w.pushAnim(50, 1);  // light intensity, slot 1
   w.pushPaint(0xffffffff, false);
   auto program = w.finish();
 
@@ -4794,7 +4792,7 @@ void aBackdropOnACanvasTheSizeOfARealOne() {
   w.pushAnim(24);
   w.pushAnim(150);
   w.pushAnim(72);
-  w.push(18);  // corner radius
+  w.push(18);      // corner radius
   w.pushAnim(14);  // blur
   w.pushAnim(0);   // refraction: a plain frosted panel
   w.pushAnim(20);
@@ -4891,7 +4889,7 @@ void aBackdropAtAPixelRatioLeavesTheRestOfTheSceneAlone() {
       w.pushAnim(8);
       w.pushAnim(16);
       w.pushAnim(16);
-      w.push(3);           // corner radius
+      w.push(3);               // corner radius
       w.pushAnim(6);           // blur
       w.pushAnim(refraction);  // 0 is a plain blur, above 0 is glass
       w.pushAnim(20);
@@ -5055,20 +5053,20 @@ void liveTextReshapesOnAStringPush() {
   w.push(400);
   w.push(0);
   w.push(0);
-  w.push(1);              // one run
-  w.pushStringAnim(0, 0); // run text follows string slot 0
-  w.push(2);              // run family ("")
-  w.push(0);              // run weight
-  w.push(0);              // run italic
-  w.push(0);              // run letterSpacing
-  w.push(0);              // run size
-  w.push(0);              // run hasColor
-  w.push(0);              // run color
-  w.push(0);              // wrapWidth
-  w.push(0);              // align
-  w.push(0);              // lineHeight
-  w.push(0);              // maxLines
-  w.push(2);              // ellipsis ("")
+  w.push(1);               // one run
+  w.pushStringAnim(0, 0);  // run text follows string slot 0
+  w.push(2);               // run family ("")
+  w.push(0);               // run weight
+  w.push(0);               // run italic
+  w.push(0);               // run letterSpacing
+  w.push(0);               // run size
+  w.push(0);               // run hasColor
+  w.push(0);               // run color
+  w.push(0);               // wrapWidth
+  w.push(0);               // align
+  w.push(0);               // lineHeight
+  w.push(0);               // maxLines
+  w.push(2);               // ellipsis ("")
   w.pushPaint(0xff000000, false);
   tgfxrn::SceneRenderer renderer;
   renderer.setScene(w.finish(), strings);
@@ -5208,13 +5206,13 @@ void animatedBlurRadiusChangesThePixels() {
   w.pushAnim(0);
   w.pushAnim(0);
   w.pushAnim(1);
-  w.pushAnim(3);   // blend srcOver
-  w.push(-1);      // no colour filter
-  w.push(0);       // blur image filter
+  w.pushAnim(3);  // blend srcOver
+  w.push(-1);     // no colour filter
+  w.push(0);      // blur image filter
   w.pushAnim(0, /*slot=*/0);
   w.pushAnim(0, /*slot=*/0);
-  w.push(3);       // decal
-  w.push(-1);      // no shader
+  w.push(3);   // decal
+  w.push(-1);  // no shader
   tgfxrn::SceneRenderer renderer;
   renderer.setScene(w.finish(), {});
   auto sharp = drawFrame(renderer, {0.01});
@@ -5233,7 +5231,7 @@ void animatedStyleWordFlipsFillToStroke() {
   w.pushAnim(32);
   w.pushAnim(32);
   w.push(0xffff0000);
-  w.push(2 | 32);  // antiAlias + animated style/aa words
+  w.push(2 | 32);             // antiAlias + animated style/aa words
   w.pushAnim(0, /*slot=*/0);  // style word
   w.pushAnim(1);              // antiAlias word
   w.pushAnim(2);              // strokeWidth
@@ -5335,11 +5333,10 @@ void srcRectSlotStepsSprites() {
   CHECK(pixelAt(blueFrame, 32, 32)[2] == 255);
 }
 
-
 void aSparseStringPushNeverBlanksANeighbour() {
   // Two live-path nodes on slots 0 and 1; pushing only slot 1 must leave 0 drawn.
   const std::vector<std::string> strings{"M8 8 L28 8 L28 28 L8 28 Z",
-                                        "M36 8 L56 8 L56 28 L36 28 Z"};
+                                         "M36 8 L56 8 L56 28 L36 28 Z"};
   Writer w;
   w.push(2);
   w.push(6);
@@ -5420,8 +5417,8 @@ void anImageShaderSlotSeededZeroStillGoesLive() {
   w.pushAnim(0);
   w.pushAnim(0);
   w.pushAnim(1);
-  w.push(7);          // image shader
-  w.pushAnim(0, 0);   // handle slot seeded 0: nothing loaded at commit time
+  w.push(7);         // image shader
+  w.pushAnim(0, 0);  // handle slot seeded 0: nothing loaded at commit time
   w.push(1);
   w.push(1);
   w.push(1);
@@ -5436,7 +5433,6 @@ void anImageShaderSlotSeededZeroStillGoesLive() {
   CHECK(pixelAt(lit, 32, 32)[0] == 255);
   CHECK(pixelAt(lit, 32, 32)[1] == 0);
 }
-
 
 /// encode/save's rasterize path: any registry entry becomes CPU pixels finishSnapshot can eat.
 void aRegisteredImageRasterizesForEncoding() {
@@ -5471,7 +5467,6 @@ void aRegisteredImageRasterizesForEncoding() {
   }
   CHECK(threw);
 }
-
 
 namespace {
 /// Bounded spin for the offscreen worker's callback; SceneTest has no runloop.
@@ -5520,22 +5515,22 @@ void anOffscreenSurfaceRendersSlotsAndViewport() {
 
   auto first = surfaceRaw(surface);
   CHECK(first.size() == 8u * 8u * 4u);
-  CHECK(first[0] == 255 && first[1] == 45 && first[2] == 85);   // (0,0) inside the rect
+  CHECK(first[0] == 255 && first[1] == 45 && first[2] == 85);  // (0,0) inside the rect
   size_t right = (0 * 8 + 6) * 4;
-  CHECK(first[right + 0] == 0 && first[right + 1] == 0);        // (6,0) is background
+  CHECK(first[right + 0] == 0 && first[right + 1] == 0);  // (6,0) is background
 
   // A slot write moves the rect with no re-encode; the retained program re-renders.
   surface->setValues({4});
   auto moved = surfaceRaw(surface);
-  CHECK(moved[0] == 0);                                          // left edge vacated
-  CHECK(moved[right + 0] == 255 && moved[right + 2] == 85);      // landed at x=4..8
+  CHECK(moved[0] == 0);                                      // left edge vacated
+  CHECK(moved[right + 0] == 255 && moved[right + 2] == 85);  // landed at x=4..8
 
   // The viewport rides above the program, exactly as on a view.
   surface->setValues({0});
   surface->setViewport(2.0f, 0.0f, 0.0f);
   auto zoomed = surfaceRaw(surface);
   size_t past = (0 * 8 + 7) * 4;
-  CHECK(zoomed[past + 0] == 255);                                // 4pt rect fills 8px at zoom 2
+  CHECK(zoomed[past + 0] == 255);  // 4pt rect fills 8px at zoom 2
 
   // Headless hit test answers from the staged scene in canvas points.
   surface->setViewport(1.0f, 0.0f, 0.0f);
@@ -5556,7 +5551,6 @@ void anOffscreenSurfaceRendersSlotsAndViewport() {
   });
   CHECK(waitFor(rejected));
 }
-
 
 /// The unpremultiply in the encode tail, at an alpha where it is not a no-op,
 /// and the two rejection branches encode must take.

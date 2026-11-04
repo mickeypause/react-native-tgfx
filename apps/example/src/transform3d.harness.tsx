@@ -38,7 +38,9 @@ async function readBack(scene: React.ReactNode) {
     width: shot.width,
     height: shot.height,
     at(x: number, y: number) {
-      const i = (y * shot.width + x) * 4;
+      // Floored: an odd-sized frame puts width / 2 on a half pixel, and a
+      // fractional index lands on another row's left edge instead.
+      const i = (Math.floor(y) * shot.width + Math.floor(x)) * 4;
       return [px[i]!, px[i + 1]!, px[i + 2]!];
     },
   };

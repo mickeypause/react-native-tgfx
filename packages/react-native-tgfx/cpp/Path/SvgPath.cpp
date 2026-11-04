@@ -133,9 +133,12 @@ tgfx::Path parseSvgPath(const std::string& data) {
         float x2 = cur.number(), y2 = cur.number();
         float x = cur.number(), y = cur.number();
         if (relative) {
-          x1 += curX; y1 += curY;
-          x2 += curX; y2 += curY;
-          x += curX; y += curY;
+          x1 += curX;
+          y1 += curY;
+          x2 += curX;
+          y2 += curY;
+          x += curX;
+          y += curY;
         }
         path.cubicTo(x1, y1, x2, y2, x, y);
         ctrlX = x2;
@@ -148,8 +151,10 @@ tgfx::Path parseSvgPath(const std::string& data) {
         float x2 = cur.number(), y2 = cur.number();
         float x = cur.number(), y = cur.number();
         if (relative) {
-          x2 += curX; y2 += curY;
-          x += curX; y += curY;
+          x2 += curX;
+          y2 += curY;
+          x += curX;
+          y += curY;
         }
         float x1 = curX, y1 = curY;
         char up = static_cast<char>(std::toupper(static_cast<unsigned char>(prevCmd)));
@@ -168,8 +173,10 @@ tgfx::Path parseSvgPath(const std::string& data) {
         float x1 = cur.number(), y1 = cur.number();
         float x = cur.number(), y = cur.number();
         if (relative) {
-          x1 += curX; y1 += curY;
-          x += curX; y += curY;
+          x1 += curX;
+          y1 += curY;
+          x += curX;
+          y += curY;
         }
         path.quadTo(x1, y1, x, y);
         ctrlX = x1;
@@ -181,7 +188,8 @@ tgfx::Path parseSvgPath(const std::string& data) {
       case 'T': {
         float x = cur.number(), y = cur.number();
         if (relative) {
-          x += curX; y += curY;
+          x += curX;
+          y += curY;
         }
         float x1 = curX, y1 = curY;
         char up = static_cast<char>(std::toupper(static_cast<unsigned char>(prevCmd)));
@@ -205,7 +213,8 @@ tgfx::Path parseSvgPath(const std::string& data) {
           break;
         }
         if (relative) {
-          x += curX; y += curY;
+          x += curX;
+          y += curY;
         }
         if (path.isEmpty()) {
           path.moveTo(curX, curY);

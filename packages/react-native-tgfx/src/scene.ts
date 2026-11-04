@@ -403,44 +403,41 @@ export class Scene {
     if (listenable.length === 0) {
       return
     }
-    this.mapperId = startMapper(
-      () => {
-        'worklet'
-        const mirrored = mirror != null ? valuesOf(mirror) : null
-        for (let i = 0; i < values.length; i++) {
-          const v = readLiveNumber(values[i]!)
-          slots[i] = v
-          if (mirrored != null) {
-            mirrored[i] = v
+    this.mapperId = startMapper(() => {
+      'worklet'
+      const mirrored = mirror != null ? valuesOf(mirror) : null
+      for (let i = 0; i < values.length; i++) {
+        const v = readLiveNumber(values[i]!)
+        slots[i] = v
+        if (mirrored != null) {
+          mirrored[i] = v
+        }
+      }
+      if (mirror != null) {
+        flagsOf(mirror)[0] = 1
+      }
+      for (const view of views) {
+        view.setValues(slots)
+      }
+      if (stringValues.length > 0) {
+        let indices: number[] | null = null
+        let out: string[] | null = null
+        for (let i = 0; i < stringValues.length; i++) {
+          const now = readLiveString(stringValues[i]!)
+          if (now === sent[i]) {
+            continue
+          }
+          sent[i] = now
+          ;(indices ??= []).push(i)
+          ;(out ??= []).push(now)
+        }
+        if (indices != null && out != null) {
+          for (const view of views) {
+            view.setStringValues?.(indices, out)
           }
         }
-        if (mirror != null) {
-          flagsOf(mirror)[0] = 1
-        }
-        for (const view of views) {
-          view.setValues(slots)
-        }
-        if (stringValues.length > 0) {
-          let indices: number[] | null = null
-          let out: string[] | null = null
-          for (let i = 0; i < stringValues.length; i++) {
-            const now = readLiveString(stringValues[i]!)
-            if (now === sent[i]) {
-              continue
-            }
-            sent[i] = now
-            ;(indices ??= []).push(i)
-            ;(out ??= []).push(now)
-          }
-          if (indices != null && out != null) {
-            for (const view of views) {
-              view.setStringValues?.(indices, out)
-            }
-          }
-        }
-      },
-      listenable
-    )
+      }
+    }, listenable)
   }
 
   private markDirty(): void {

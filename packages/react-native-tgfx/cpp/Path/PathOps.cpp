@@ -143,10 +143,22 @@ void appendReversed(tgfx::Path& out, const std::vector<tgfx::Path::Segment>& seg
   for (const auto& segment : segments) {
     switch (segment.verb) {
       case tgfx::PathVerb::Move: ends.push_back(segment.points[0]); break;
-      case tgfx::PathVerb::Line: ends.push_back(segment.points[1]); curves.push_back(segment); break;
-      case tgfx::PathVerb::Quad: ends.push_back(segment.points[2]); curves.push_back(segment); break;
-      case tgfx::PathVerb::Conic: ends.push_back(segment.points[2]); curves.push_back(segment); break;
-      case tgfx::PathVerb::Cubic: ends.push_back(segment.points[3]); curves.push_back(segment); break;
+      case tgfx::PathVerb::Line:
+        ends.push_back(segment.points[1]);
+        curves.push_back(segment);
+        break;
+      case tgfx::PathVerb::Quad:
+        ends.push_back(segment.points[2]);
+        curves.push_back(segment);
+        break;
+      case tgfx::PathVerb::Conic:
+        ends.push_back(segment.points[2]);
+        curves.push_back(segment);
+        break;
+      case tgfx::PathVerb::Cubic:
+        ends.push_back(segment.points[3]);
+        curves.push_back(segment);
+        break;
       default: break;
     }
   }

@@ -32,6 +32,10 @@ ensure_github_token
 
 for pkg in packages/*; do
   [ -d "$pkg" ] || continue
+  if [ -n "$(npm view "$(basename "$pkg")@$1" version 2>/dev/null)" ]; then
+    echo "Skipping '$(basename "$pkg")': $1 is already on NPM"
+    continue
+  fi
   echo "Publishing '$(basename "$pkg")' to NPM"
   (cd "$pkg" && bun run release "$@")
 done

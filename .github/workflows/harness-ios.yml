@@ -1,0 +1,175 @@
+name: Harness iOS
+
+concurrency:
+  group: harness-ios-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_name != 'main' }}
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/harness-ios.yml'
+      - 'packages/**'
+      - 'apps/example/**'
+      - 'patches/**'
+      - 'scripts/tgfx-prebuilt.sh'
+      - 'package.json'
+      - 'bun.lock'
+  pull_request:
+    paths:
+      - '.github/workflows/harness-ios.yml'
+      - 'packages/**'
+      - 'apps/example/**'
+      - 'patches/**'
+      - 'scripts/tgfx-prebuilt.sh'
+      - 'package.json'
+      - 'bun.lock'
+  workflow_dispatch:
+    inputs:
+      device_model:
+        description: 'iOS Simulator device model'
+        required: false
+        default: 'iPhone 17 Pro'
+        type: string
+      ios_version:
+        description: 'iOS version'
+        required: false
+        default: '26.5'
+        type: string
+      xcode_version:
+        description: 'Xcode version'
+        required: false
+        default: '26.5'
+        type: string
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  XCODE_VERSION: ${{ inputs.xcode_version || '26.5' }}
+  DEVELOPER_DIR: /Applications/Xcode_${{ inputs.xcode_version || '26.5' }}.app/Contents/Developer
+  # Read by apps/example/rn-harness.config.mjs (the ios-sim runner).
+  HARNESS_SIM_DEVICE: ${{ inputs.device_model || 'iPhone 17 Pro' }}
+  HARNESS_SIM_OS: ${{ inputs.ios_version || '26.5' }}
+
+jobs:
+  harness:
+    name: Harness iOS
+    runs-on: macos-26
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install npm dependencies (bun)
+        run: bun install --frozen-lockfile
+
+      # Keyed by the submodule's pinned commit; a PR that bumps tgfx misses and
+      # builds the xcframework from source.
+      - name: Fetch prebuilt tgfx
+        id: prebuilt
+        continue-on-error: true
+        run: bash scripts/tgfx-prebuilt.sh
+
+      - name: Build tgfx from source (no prebuilt for this submodule commit)
+        if: steps.prebuilt.outcome == 'failure'
+        env:
+          # The fork has no LFS objects; Tencent/tgfx serves the same OIDs.
+          GIT_LFS_SKIP_SMUDGE: 1
+        run: |
+          git submodule update --init --recursive packages/react-native-tgfx/cpp/third_party/tgfx
+          (cd packages/react-native-tgfx/cpp/third_party/tgfx &&
+            git config lfs.url https://github.com/Tencent/tgfx.git/info/lfs &&
+            ./install_tools.sh && ./sync_deps.sh)
+          bash packages/react-native-tgfx/scripts/build-tgfx-ios.sh
+
+      - name: Setup Ruby (bundle)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: apps/example
+
+      - name: Restore Pods cache
+        uses: actions/cache@v6
+        with:
+          path: apps/example/ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('bun.lock', 'apps/example/Gemfile.lock', 'apps/example/ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Install Pods
+        working-directory: apps/example/ios
+        run: bundle exec pod install
+
+      - name: Restore DerivedData cache
+        uses: actions/cache@v6
+        with:
+          path: apps/example/ios/build
+          key: ${{ runner.os }}-xcode${{ env.XCODE_VERSION }}-dd-${{ hashFiles('bun.lock', 'apps/example/Gemfile.lock', 'apps/example/ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-xcode${{ env.XCODE_VERSION }}-dd-
+
+      # arm64 only: the runner is Apple Silicon, so the simulator runs natively
+      # and a second slice would only double the build.
+      - name: Build the example app for the simulator
+        working-directory: apps/example/ios
+        run: |
+          xcodebuild \
+            -derivedDataPath build \
+            -workspace TgfxExample.xcworkspace \
+            -scheme TgfxExample \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            ARCHS=arm64 \
+            CODE_SIGNING_ALLOWED=NO \
+            build | xcbeautify --renderer github-actions
+
+      - name: Install Watchman
+        run: brew install watchman
+
+      - name: Run Harness E2E tests
+        uses: callstackincubator/react-native-harness@v1.4.0
+        env:
+          # Metro runs in the harness process and keeps a graph per test file,
+          # past Node's ~2 GB default on this 7 GB runner (Ubuntu's 16 GB gets ~4 GB).
+          NODE_OPTIONS: --max-old-space-size=5120
+        with:
+          runner: ios-sim
+          projectRoot: apps/example
+          app: ios/build/Build/Products/Debug-iphonesimulator/TgfxExample.app
+          packageManager: bun
+
+      # Written fresh on every run (see the ios-sim runner), so this is the only
+      # place to see what the simulator drew.
+      - name: Upload simulator snapshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: harness-ios-snapshots
+          path: apps/example/src/__image_snapshots__/ios-sim
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Print native crash reports
+        if: failure()
+        working-directory: apps/example
+        run: |
+          # Harness only extracts crash logs it classifies as native crashes,
+          # so also print the simulator's own crash reports.
+          {
+            [ -d .harness/crash-reports ] && find .harness/crash-reports -type f
+            find ~/Library/Logs/DiagnosticReports -name 'TgfxExample*.ips' 2>/dev/null
+          } | sort | while read -r report; do
+            echo "::group::$report"
+            cat "$report"
+            echo "::endgroup::"
+          done

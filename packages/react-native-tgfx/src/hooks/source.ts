@@ -29,6 +29,15 @@ export function looksLikeSvgMarkup(source: string): boolean {
   return false
 }
 
+/**
+ * True for an absolute path such as `save()` writes to. Base64 can open with
+ * "/" too (a JPEG payload starts "/9j/"), but never holds a character outside
+ * its alphabet, and a real path's name or extension nearly always does.
+ */
+function looksLikeAbsolutePath(source: string): boolean {
+  return source.startsWith('/') && /[^A-Za-z0-9+/=\s]/.test(source)
+}
+
 function dataPayload(uri: string): string | null {
   if (!uri.startsWith('data:')) {
     return null
@@ -75,7 +84,11 @@ export async function loadSource<T>(
   // A release Android build compiles a bundled asset into a drawable/raw
   // resource, so this is a bare resource name - no scheme, no path. Native
   // reads it by name; base64 would only see the name's own characters.
-  if (uri.startsWith('file:') || (bareIsPath && !/^[a-z][a-z\d+.-]*:/i.test(uri))) {
+  if (
+    uri.startsWith('file:') ||
+    (bareIsPath && !/^[a-z][a-z\d+.-]*:/i.test(uri)) ||
+    looksLikeAbsolutePath(uri)
+  ) {
     return api.fromFile(uri)
   }
   if (/^(https?|content|asset):/.test(uri)) {

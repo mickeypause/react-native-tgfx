@@ -1,28 +1,5 @@
 PODS:
   - FBLazyVector (0.85.3)
-  - GoogleDataTransport (10.1.1):
-    - nanopb (~> 3.30910.0)
-    - PromisesObjC (~> 2.4)
-  - GoogleMLKit/FaceDetection (9.0.0):
-    - GoogleMLKit/MLKitCore
-    - MLKitFaceDetection (~> 8.0.0)
-  - GoogleMLKit/MLKitCore (9.0.0):
-    - MLKitCommon (~> 14.0.0)
-  - GoogleToolboxForMac/Defines (4.2.1)
-  - GoogleToolboxForMac/Logger (4.2.1):
-    - GoogleToolboxForMac/Defines (= 4.2.1)
-  - "GoogleToolboxForMac/NSData+zlib (4.2.1)":
-    - GoogleToolboxForMac/Defines (= 4.2.1)
-  - GoogleUtilities/Environment (8.1.2):
-    - GoogleUtilities/Privacy
-  - GoogleUtilities/Logger (8.1.2):
-    - GoogleUtilities/Environment
-    - GoogleUtilities/Privacy
-  - GoogleUtilities/Privacy (8.1.2)
-  - GoogleUtilities/UserDefaults (8.1.2):
-    - GoogleUtilities/Logger
-    - GoogleUtilities/Privacy
-  - GTMSessionFetcher/Core (3.5.0)
   - HarnessUI (1.3.0):
     - hermes-engine
     - RCTRequired
@@ -48,28 +25,6 @@ PODS:
   - hermes-engine (250829098.0.10):
     - hermes-engine/Pre-built (= 250829098.0.10)
   - hermes-engine/Pre-built (250829098.0.10)
-  - MLImage (1.0.0-beta8)
-  - MLKitCommon (14.0.0):
-    - GoogleDataTransport (~> 10.0)
-    - GoogleToolboxForMac/Logger (< 5.0, >= 4.2.1)
-    - "GoogleToolboxForMac/NSData+zlib (< 5.0, >= 4.2.1)"
-    - GoogleUtilities/Logger (~> 8.0)
-    - GoogleUtilities/UserDefaults (~> 8.0)
-    - GTMSessionFetcher/Core (< 4.0, >= 3.3.2)
-  - MLKitFaceDetection (8.0.0):
-    - MLKitCommon (~> 14.0)
-    - MLKitVision (~> 10.0)
-  - MLKitVision (10.0.0):
-    - GoogleToolboxForMac/Logger (< 5.0, >= 4.2.1)
-    - "GoogleToolboxForMac/NSData+zlib (< 5.0, >= 4.2.1)"
-    - GTMSessionFetcher/Core (< 4.0, >= 3.3.2)
-    - MLImage (= 1.0.0-beta8)
-    - MLKitCommon (~> 14.0)
-  - nanopb (3.30910.0):
-    - nanopb/decode (= 3.30910.0)
-    - nanopb/encode (= 3.30910.0)
-  - nanopb/decode (3.30910.0)
-  - nanopb/encode (3.30910.0)
   - NitroImage (0.15.1):
     - hermes-engine
     - NitroModules
@@ -117,7 +72,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - NitroTgfx (0.0.2-alpha.10):
+  - NitroTgfx (0.1.0):
     - hermes-engine
     - NitroModules
     - RCTRequired
@@ -141,7 +96,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - NitroTgfxCamera (0.0.1-alpha.4):
+  - NitroTgfxCamera (0.1.0):
     - hermes-engine
     - NitroModules
     - NitroTgfx
@@ -167,7 +122,6 @@ PODS:
     - ReactNativeDependencies
     - VisionCamera
     - Yoga
-  - PromisesObjC (2.4.1)
   - RCTDeprecation (0.85.3)
   - RCTRequired (0.85.3)
   - RCTSwiftUI (0.85.3)
@@ -2238,32 +2192,6 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - VisionCameraFaceDetector (2.0.6):
-    - GoogleMLKit/FaceDetection (= 9.0.0)
-    - hermes-engine
-    - NitroModules
-    - RCTRequired
-    - RCTTypeSafety
-    - React-callinvoker
-    - React-Core
-    - React-Core-prebuilt
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - VisionCamera
-    - Yoga
   - VisionCameraWorklets (5.2.0):
     - hermes-engine
     - NitroModules
@@ -2377,23 +2305,8 @@ DEPENDENCIES:
   - RNReanimated (from `../../../node_modules/react-native-reanimated`)
   - RNWorklets (from `../../../node_modules/react-native-worklets`)
   - VisionCamera (from `../../../node_modules/react-native-vision-camera`)
-  - VisionCameraFaceDetector (from `../../../node_modules/react-native-vision-camera-face-detector`)
   - VisionCameraWorklets (from `../../../node_modules/react-native-vision-camera-worklets`)
   - Yoga (from `../../../node_modules/react-native/ReactCommon/yoga`)
-
-SPEC REPOS:
-  trunk:
-    - GoogleDataTransport
-    - GoogleMLKit
-    - GoogleToolboxForMac
-    - GoogleUtilities
-    - GTMSessionFetcher
-    - MLImage
-    - MLKitCommon
-    - MLKitFaceDetection
-    - MLKitVision
-    - nanopb
-    - PromisesObjC
 
 EXTERNAL SOURCES:
   FBLazyVector:
@@ -2563,8 +2476,6 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/react-native-worklets"
   VisionCamera:
     :path: "../../../node_modules/react-native-vision-camera"
-  VisionCameraFaceDetector:
-    :path: "../../../node_modules/react-native-vision-camera-face-detector"
   VisionCameraWorklets:
     :path: "../../../node_modules/react-native-vision-camera-worklets"
   Yoga:
@@ -2572,23 +2483,12 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   FBLazyVector: 24e62c765683b8d89006a88a2c8f5cf019f0074d
-  GoogleDataTransport: a24e58982ab3ba2f64d79613e027fe7f57e88539
-  GoogleMLKit: b1eee21a41c57704fe72483b15c85cb2c0cd7444
-  GoogleToolboxForMac: d1a2cbf009c453f4d6ded37c105e2f67a32206d8
-  GoogleUtilities: 766ace00c6b10d8148408f329d10c4f051931850
-  GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   HarnessUI: f439596aec93ff76765451f834c93f966d54e53e
-  hermes-engine: d9f77c582ef8af5579a4bce269900b09b739735d
-  MLImage: 0de5c6c2bf9e93b80ef752e2797f0836f03b58c0
-  MLKitCommon: 47d47b50a031d00db62f1b0efe5a1d8b09a3b2e6
-  MLKitFaceDetection: 32549f1e70e6e7731261bf9cea2b74095e2531cb
-  MLKitVision: 39a5a812db83c4a0794445088e567f3631c11961
-  nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
+  hermes-engine: 58f4822764f3a9815044f59cfb5686c16a84754d
   NitroImage: 2f592086cbdecbbaa1c10dd97e0cdd43b1bb0817
   NitroModules: 452230d9b63c6c3f59dd97eeaa27ec3449271d4a
-  NitroTgfx: 80ee71ec84987ceafac599cd081aca0937e79b17
-  NitroTgfxCamera: d376202c7b83edb3a14bf786f41d5f48301becff
-  PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
+  NitroTgfx: c75630aa991b4a7b16fceb0720c65da640960fd9
+  NitroTgfxCamera: 4829584fec253c1f7c23fdd2b13219ea47870b77
   RCTDeprecation: a4c521821fab57cbb125b36effe84d897d0dfa12
   RCTRequired: 9f3a7e5645d4bc3f551593de7550bb66ab6e42bc
   RCTSwiftUI: 239ed2eb9e73de5a6f518810630f0c95e01c8702
@@ -2597,7 +2497,7 @@ SPEC CHECKSUMS:
   React: e2dc35338068bbd299c66f043ae0d7f25de8499e
   React-callinvoker: 28b25d21b124c26cebaea713ba7d801b9351dc48
   React-Core: 02ed7d2ffb70437bdf2aba074a13078a7b0b9ff0
-  React-Core-prebuilt: 2825901e5c1cd6b1e2a782b512315ed4f1f839d3
+  React-Core-prebuilt: 25b2ed0b2a1b5c83d11b223a023cc09b4b565806
   React-CoreModules: b3a5a42dadcde3b5d47b325bd912eb2ced89e146
   React-cxxreact: fe8f88dda044e5905e99a00f41b7a874c3908716
   React-debug: 92944dc4d89f56d640e75498266cbde557a48189
@@ -2660,15 +2560,14 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: 25c9c516839be2c5e3d3344f95dc7da5f7e63fc2
   ReactCodegen: dfe41c3f92bdf782bcf9b2c9d7c12cb9cfd82cb7
   ReactCommon: 7dfc3250793bf36cf221096ff59e1179e13eef7f
-  ReactNativeDependencies: 51b835cb1683792f4e1ddda290ff014f204cc1e1
+  ReactNativeDependencies: c28f59fffc0eb0b5916f8ce57fb9c91ae67ba018
   RNGestureHandler: ea542e5ad254ac2d234024168a8b87d723cf9463
   RNReanimated: 7094afd106a35ecb18602b098a2d862e5d358610
   RNWorklets: 569850c3a49a5fc56fce17aafb19be4316a60e58
   VisionCamera: fee2d5cfbc39eae6cd7c1ecf2165873a544e7ecd
-  VisionCameraFaceDetector: 8c4ba53663f9137d4329d55d8ad2019be78c5037
   VisionCameraWorklets: d7658e2935db2dbb6c25a6929b13a93414697aef
   Yoga: 77dfa8673de2874e1855002ae59c68b8be9b007b
 
-PODFILE CHECKSUM: e48e639020fe727755b1eb78129c50e72b433a63
+PODFILE CHECKSUM: eab69dfd2daa1cf741d10f4aba50ad95d22d8a5b
 
 COCOAPODS: 1.15.2

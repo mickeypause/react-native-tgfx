@@ -1,0 +1,56 @@
+name: Lint C++
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/lint-cpp.yml'
+      - '.clang-format'
+      - 'scripts/clang-format.sh'
+      - '**/*.h'
+      - '**/*.hpp'
+      - '**/*.c'
+      - '**/*.cpp'
+      - '**/*.m'
+      - '**/*.mm'
+  pull_request:
+    paths:
+      - '.github/workflows/lint-cpp.yml'
+      - '.clang-format'
+      - 'scripts/clang-format.sh'
+      - '**/*.h'
+      - '**/*.hpp'
+      - '**/*.c'
+      - '**/*.cpp'
+      - '**/*.m'
+      - '**/*.mm'
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  lint:
+    name: Format C++
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # The version scripts/clang-format.sh pins; the runner's own is another major.
+      - name: Install clang-format
+        run: |
+          version=$(sed -n 's/^CLANG_FORMAT_VERSION=//p' scripts/clang-format.sh)
+          pipx install "clang-format==$version"
+
+      - name: Run clang-format
+        run: bash scripts/clang-format.sh
+
+      - name: Verify no files have changed after format
+        run: |
+          if ! git diff --exit-code; then
+            echo "::error::C++ is not formatted, run 'bun lint-cpp' and commit the result"
+            exit 1
+          fi

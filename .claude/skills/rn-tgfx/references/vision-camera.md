@@ -138,9 +138,9 @@ behind it.
   and a `try`/`finally` releases the buffer and disposes the frame on every path
   including a throw. Your callback runs inside that same `try`.
 
-## Face blur — the reference app
+## Face blur
 
-`apps/example/src/TgfxFaceBlur.tsx`. The scene compiles once, so allocate a
+The scene compiles once, so allocate a
 **fixed** number of slots; an unused slot has zero size and draws nothing.
 
 ```tsx

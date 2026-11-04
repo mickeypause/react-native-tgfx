@@ -8,7 +8,9 @@ namespace tgfxrn {
 // Per-tick decision for a display link that pauses itself once nothing animates.
 class IdleGate {
  public:
-  enum class Tick { Draw, Skip, Pause };
+  enum class Tick { Draw,
+                    Skip,
+                    Pause };
 
   void wake() {
     wakeGeneration_.fetch_add(1, std::memory_order_release);

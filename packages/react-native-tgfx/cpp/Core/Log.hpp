@@ -8,11 +8,11 @@
   __android_log_print(ANDROID_LOG_INFO, "react-native-tgfx", __VA_ARGS__)
 #else
 #include <cstdio>
-#define TGFXRN_LOGW(...)                       \
-  do {                                         \
+#define TGFXRN_LOGW(...)                          \
+  do {                                            \
     std::fprintf(stderr, "[react-native-tgfx] "); \
-    std::fprintf(stderr, __VA_ARGS__);         \
-    std::fprintf(stderr, "\n");                \
+    std::fprintf(stderr, __VA_ARGS__);            \
+    std::fprintf(stderr, "\n");                   \
   } while (0)
 #define TGFXRN_LOGI(...) TGFXRN_LOGW(__VA_ARGS__)
 #endif

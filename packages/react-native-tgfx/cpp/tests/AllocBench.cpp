@@ -41,11 +41,16 @@ void* operator new(size_t size) {
     gAllocs.fetch_add(1, std::memory_order_relaxed);
   }
   void* p = std::malloc(size ? size : 1);
-  if (p == nullptr) throw std::bad_alloc();
+  if (p == nullptr)
+    throw std::bad_alloc();
   return p;
 }
-void operator delete(void* p) noexcept { std::free(p); }
-void operator delete(void* p, size_t) noexcept { std::free(p); }
+void operator delete(void* p) noexcept {
+  std::free(p);
+}
+void operator delete(void* p, size_t) noexcept {
+  std::free(p);
+}
 
 namespace {
 
@@ -67,7 +72,8 @@ struct Writer {
   std::vector<double> finish() {
     auto patchStart = words.size();
     words.push_back(static_cast<double>(patches.size() / 2));
-    for (double p : patches) words.push_back(p);
+    for (double p : patches)
+      words.push_back(p);
     words.push_back(0);  // empty string-patch table
     words[0] = tgfxrn::kSceneVersion;
     words[1] = static_cast<double>(words.size());
@@ -95,8 +101,9 @@ std::vector<double> scene(bool filters) {
       w.push(24);  // multiply
       w.push(0);   // colour matrix
       const double m[20] = {0.2, 0.7, 0.1, 0, 0, 0.2, 0.7, 0.1, 0, 0,
-                            0.2, 0.7, 0.1, 0, 0, 0,   0,   0,   1, 0};
-      for (double v : m) w.push(v);
+                            0.2, 0.7, 0.1, 0, 0, 0, 0, 0, 1, 0};
+      for (double v : m)
+        w.push(v);
       w.push(-1);  // no image filter
     }
     w.push(-1);  // no shader
@@ -179,11 +186,11 @@ std::vector<double> childShaderScene(int32_t childHandle, bool animatedUniform,
       continue;
     }
     w.push(6);  // runtime shader
-    w.push(0);         // body
-    w.push(1);         // empty preamble
-    w.push(0);         // no functions
-    w.push(1);         // one uniform
-    w.push(2);         // "uLevel"
+    w.push(0);  // body
+    w.push(1);  // empty preamble
+    w.push(0);  // no functions
+    w.push(1);  // one uniform
+    w.push(2);  // "uLevel"
     w.push(1);
     w.pushAnim(0.5, animatedUniform ? 0 : -1);
     if (childHandle == 0) {
@@ -307,24 +314,24 @@ std::vector<double> textScene() {
     w.pushAnim(2);
     w.pushAnim(12 + (i % 4) * 12);
     w.pushAnim(kBaseSize, 0);
-    w.push(1);   // "Helvetica"
+    w.push(1);  // "Helvetica"
     w.push(400);
-    w.push(0);   // style bits
-    w.push(0);   // letterSpacing
-    w.push(1);   // one run
-    w.push(0);   // "Benchmark"
-    w.push(2);   // run family ("")
-    w.push(0);   // run weight (inherit)
-    w.push(0);   // run italic (inherit)
-    w.push(0);   // run letterSpacing
-    w.push(0);   // run size (inherit)
-    w.push(0);   // run hasColor
-    w.push(0);   // run color
-    w.push(0);   // no wrap
-    w.push(0);   // align left
-    w.push(0);   // natural line height
-    w.push(0);   // no maxLines
-    w.push(2);   // empty ellipsis
+    w.push(0);  // style bits
+    w.push(0);  // letterSpacing
+    w.push(1);  // one run
+    w.push(0);  // "Benchmark"
+    w.push(2);  // run family ("")
+    w.push(0);  // run weight (inherit)
+    w.push(0);  // run italic (inherit)
+    w.push(0);  // run letterSpacing
+    w.push(0);  // run size (inherit)
+    w.push(0);  // run hasColor
+    w.push(0);  // run color
+    w.push(0);  // no wrap
+    w.push(0);  // align left
+    w.push(0);  // natural line height
+    w.push(0);  // no maxLines
+    w.push(2);  // empty ellipsis
     w.push(0xff000000);
     w.push(2);
     w.pushAnim(1);
@@ -517,8 +524,7 @@ bool reportCamera() {
   std::printf("  opaque pixels drawn        %zu\n", drawn);
   std::printf("  decodes on the frame path  %zu\n", decodes);
   std::printf("  GPU bytes before / after   %zu / %zu  (delta %+lld)\n", memoryBefore,
-              memoryAfter, static_cast<long long>(memoryAfter) -
-                               static_cast<long long>(memoryBefore));
+              memoryAfter, static_cast<long long>(memoryAfter) - static_cast<long long>(memoryBefore));
   std::printf("  allocations per render()   mean %zu, worst %zu  (%d nodes)\n",
               total / kCameraFrames, worst, kOverlays + 1);
   std::printf("\n");
@@ -683,8 +689,9 @@ bool reportHardwareFrame() {
     return false;
   }
   if (lightFullRange == light) {
-    std::printf("FAIL: full-range and limited-range imports of the same luma read "
-                "identically — the format argument is not reaching the import\n");
+    std::printf(
+        "FAIL: full-range and limited-range imports of the same luma read "
+        "identically — the format argument is not reaching the import\n");
     return false;
   }
   if (decodes != 0) {
@@ -692,9 +699,10 @@ bool reportHardwareFrame() {
     return false;
   }
   if (memoryAfter > memoryBefore) {
-    std::printf("FAIL: GPU memory grew by %zu bytes over %d frames — a per-frame "
-                "texture, i.e. a YUV->RGB pre-pass or a re-upload\n",
-                memoryAfter - memoryBefore, kHardwareFrames);
+    std::printf(
+        "FAIL: GPU memory grew by %zu bytes over %d frames — a per-frame "
+        "texture, i.e. a YUV->RGB pre-pass or a re-upload\n",
+        memoryAfter - memoryBefore, kHardwareFrames);
     return false;
   }
   return true;

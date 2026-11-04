@@ -1,10 +1,10 @@
-// UI test of the shell the three screens live in: tabs, switching, and what each screen mounts.
+// UI test of the shell the screens live in: tabs, switching, and what each screen mounts.
 import React from 'react';
 import { describe, expect, render, test, waitFor } from 'react-native-harness';
 import { screen, userEvent } from '@react-native-harness/ui';
 import App from '../App';
 
-const TABS = ['gallery', 'faceblur', 'effects'] as const;
+const TABS = ['gallery', 'effects'] as const;
 type Tab = (typeof TABS)[number];
 
 // waitFor defaults to 1s; a camera screen's first mount on real hardware —
@@ -32,12 +32,12 @@ describe('example app shell', () => {
     await render(<App />);
     expect(await screen.findByTestId('screen-gallery')).toBeTruthy();
 
-    await userEvent.press(await screen.findByTestId('tab-faceblur'));
+    await userEvent.press(await screen.findByTestId('tab-effects'));
     await waitFor(() => {
       expect(screen.queryByTestId('screen-gallery')).toBeFalsy();
     }, MOUNT);
 
-    // Deliberately not asserting that `screen-faceblur` mounts. VisionCamera
+    // Deliberately not asserting that `screen-effects` mounts. VisionCamera
     // does not come up inside a Harness overlay render — on an emulator or on
     // a device — so the camera screens are covered by running the app, not
     // from here. What this does protect is the gallery being torn down, which

@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Pressable, StyleSheet, Text as RNText, View } from 'react-native'
 import type { CameraDevice } from 'react-native-vision-camera'
 import {
-  NativePreviewView,
   useCamera,
   useCameraDevice,
   useCameraPermission,

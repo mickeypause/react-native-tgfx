@@ -17,7 +17,20 @@ namespace {
 /// The bidi classes the resolver needs. UAX#9 has more; the ones left out are
 /// the explicit embedding, override and isolate controls, which are treated as
 /// BN — see the note on shapeText().
-enum class Bidi : uint8_t { L, R, AL, EN, AN, ES, ET, CS, NSM, BN, B, S, WS, ON };
+enum class Bidi : uint8_t { L,
+                            R,
+                            AL,
+                            EN,
+                            AN,
+                            ES,
+                            ET,
+                            CS,
+                            NSM,
+                            BN,
+                            B,
+                            S,
+                            WS,
+                            ON };
 
 bool isStrong(Bidi c) {
   return c == Bidi::L || c == Bidi::R || c == Bidi::AL;
@@ -324,7 +337,7 @@ void resolveLevels(std::vector<Char>& chars, uint8_t paragraphLevel) {
   // and numbers two; inside a right-to-left run everything else goes up one.
   for (auto& c : chars) {
     if (paragraphLevel == 0) {
-      c.level = c.resolved == Bidi::R                                 ? 1
+      c.level = c.resolved == Bidi::R                                ? 1
                 : (c.resolved == Bidi::EN || c.resolved == Bidi::AN) ? 2
                                                                      : 0;
     } else {
@@ -345,7 +358,6 @@ void resolveLevels(std::vector<Char>& chars, uint8_t paragraphLevel) {
 }
 
 // --- HarfBuzz faces ------------------------------------------------------
-
 
 hb_blob_t* tableOf(hb_face_t*, hb_tag_t tag, void* user) {
   // The user data is the shared_ptr the face holds, not the typeface itself:
@@ -438,9 +450,10 @@ void warnMissingGlyph(int32_t code) {
 void checkVersionOnce() {
   static const bool once = [] {
     if (std::string(hb_version_string()) != HB_VERSION_STRING) {
-      TGFXRN_LOGW("HarfBuzz headers say %s but the linked library is %s. Refresh "
-                  "cpp/third_party/harfbuzz — see its README.",
-                  HB_VERSION_STRING, hb_version_string());
+      TGFXRN_LOGW(
+          "HarfBuzz headers say %s but the linked library is %s. Refresh "
+          "cpp/third_party/harfbuzz — see its README.",
+          HB_VERSION_STRING, hb_version_string());
     }
     return true;
   }();

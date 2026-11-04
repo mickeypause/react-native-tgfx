@@ -235,16 +235,36 @@ test('a background does not recompile the scene on every render', async () => {
   expect(scenes.length).toBe(0)
 })
 
-test('unmounting still tears the root down', async () => {
-  const tree = await render(SCENE)
+// Fabric can recycle the view into the next canvas before this one's teardown
+// runs, so the teardown stays off the view or it blanks that canvas.
+test('unmounting tears the root down without writing to the view', async () => {
+  let cleaned = 0
+  function Child(): React.ReactElement {
+    useEffect(
+      () => () => {
+        cleaned++
+      },
+      []
+    )
+    return <Rect x={0} y={0} width={10} height={10} color="red" />
+  }
+  const direct = await render(SCENE)
+  const reconciled = await render(
+    <Canvas>
+      <Child />
+    </Canvas>
+  )
   expect(scenes.at(-1)![3]).toBe(1)
 
+  scenes = []
   await act(async () => {
-    tree.unmount()
+    direct.unmount()
+    reconciled.unmount()
     await new Promise((resolve) => setTimeout(resolve, 20))
   })
 
-  expect(scenes.at(-1)![3]).toBe(0)
+  expect(cleaned).toBe(1)
+  expect(scenes).toEqual([])
 })
 
 // A single <Rect> starts at word 4: [kind, x, y, width, height, ...paint].

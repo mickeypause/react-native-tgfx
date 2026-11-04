@@ -61,7 +61,6 @@ import {
   SdCirclePanel,
 } from './src/shaderExamples';
 import { TgfxCameraEffects } from './src/TgfxCameraEffects';
-import { TgfxFaceBlur } from './src/TgfxFaceBlur';
 import { LittlePrinceScreen } from './src/littlePrince';
 import { ScrollableShapesScreen } from './src/scrollableShapes';
 import { PhysicsScreen } from './src/physics';
@@ -391,7 +390,6 @@ const SCREENS = [
   'gallery',
   'logo',
   'pan',
-  'faceblur',
   'effects',
   'prince',
   'shapes',
@@ -433,11 +431,6 @@ function Screens() {
       {screen === 'pan' ? (
         <View style={styles.screen} testID="screen-pan">
           <PanScreen />
-        </View>
-      ) : null}
-      {screen === 'faceblur' ? (
-        <View style={styles.screenDark} testID="screen-faceblur">
-          <TgfxFaceBlur />
         </View>
       ) : null}
       {screen === 'effects' ? (

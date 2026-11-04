@@ -15,9 +15,31 @@ class Context;
 class Data;
 class Device;
 class Image;
-}
+}  // namespace tgfx
 
 namespace tgfxrn {
+
+/**
+ * Drains what Metal autoreleases inside its scope: offscreen GPU work runs on
+ * long-lived C++ threads (the surface worker, Nitro's promise pool) that never
+ * drain a pool of their own. A no-op off Apple.
+ */
+class AutoreleasePool {
+ public:
+#if defined(__APPLE__)
+  AutoreleasePool();
+  ~AutoreleasePool();
+#else
+  AutoreleasePool() = default;
+#endif
+  AutoreleasePool(const AutoreleasePool&) = delete;
+  AutoreleasePool& operator=(const AutoreleasePool&) = delete;
+
+ private:
+#if defined(__APPLE__)
+  void* pool_;
+#endif
+};
 
 /**
  * Holds the shared windowless GPU context for as long as it lives, replacing a
@@ -35,6 +57,7 @@ class OffscreenContext {
   }
 
  private:
+  AutoreleasePool pool_;
   std::shared_ptr<tgfx::Device> device_;
   tgfx::Context* context_ = nullptr;
 };

@@ -18,6 +18,13 @@
 #include "tgfx/core/ColorSpace.h"
 #include "tgfx/gpu/metal/MetalWindow.h"
 
+#if TARGET_OS_SIMULATOR
+// The simulator's CAMetalLayer throws on the XR formats; 8-bit still carries P3, with less precision.
+static const MTLPixelFormat kWidePixelFormat = MTLPixelFormatBGRA8Unorm;
+#else
+static const MTLPixelFormat kWidePixelFormat = MTLPixelFormatBGRA10_XR_sRGB;
+#endif
+
 // The `token` is the encoded buffer's owning reference, so ArrayBuffer.wrap needs no copy.
 void TgfxSnapshotRelease(void* token) {
   delete static_cast<std::shared_ptr<tgfx::Data>*>(token);
@@ -32,6 +39,8 @@ void TgfxSnapshotRelease(void* token) {
   std::atomic<bool> _drawPending;
   tgfxrn::IdleGate _idleGate;
   std::atomic<bool> _windowBound;
+  // The space the bound window was built in. Render queue only.
+  bool _boundP3;
   // Set once the display link is gone, so a snapshot staged after that is rejected, not hung.
   std::atomic<bool> _released;
   std::atomic<double> _drawableWidth;
@@ -71,6 +80,7 @@ void TgfxSnapshotRelease(void* token) {
   __weak __typeof(self) weakSelf = self;
   _renderer->setWakeCallback([weakSelf] { [weakSelf wakeUp]; });
   _windowBound = false;
+  _boundP3 = false;
   _released = false;
   _drawPending = false;
   _drawableWidth = 0;
@@ -116,14 +126,22 @@ void TgfxSnapshotRelease(void* token) {
 }
 
 - (void)bindWindowIfNeeded {
-  if (_windowBound || _renderer == nullptr) {
+  if (_renderer == nullptr) {
     return;
+  }
+  bool wantsP3 = _renderer->wantsDisplayP3();
+  if (_windowBound) {
+    if (_boundP3 == wantsP3) {
+      return;
+    }
+    // Recycled from a canvas in the other space: a window keeps its space, so build another.
+    _renderer->setWindow(nullptr);
+    _windowBound = false;
   }
   if (_drawableWidth <= 0 || _drawableHeight <= 0) {
     return;
   }
   // The layer's own space too, or the surface is P3 while the layer still presents sRGB.
-  bool wantsP3 = _renderer->wantsDisplayP3();
   if (_layerWantsP3.load() != wantsP3) {
     if (!_layerConfigPending.exchange(true)) {
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -133,7 +151,7 @@ void TgfxSnapshotRelease(void* token) {
         self->_layer.colorspace = cgSpace;
         CGColorSpaceRelease(cgSpace);
         self->_layer.pixelFormat =
-            wantsP3 ? MTLPixelFormatBGRA10_XR_sRGB : MTLPixelFormatBGRA8Unorm;
+            wantsP3 ? kWidePixelFormat : MTLPixelFormatBGRA8Unorm;
         self->_layerWantsP3 = wantsP3;
         self->_layerConfigPending = false;
         [self wakeUp];
@@ -145,6 +163,7 @@ void TgfxSnapshotRelease(void* token) {
   auto window = tgfx::MetalWindow::MakeFrom(_layer, nullptr, space);
   if (window != nullptr) {
     _renderer->setWindow(window);
+    _boundP3 = wantsP3;
     _windowBound = true;
   }
 }

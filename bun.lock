@@ -63,7 +63,6 @@
         "react-native-tgfx": "workspace:*",
         "react-native-tgfx-vision-camera": "workspace:*",
         "react-native-vision-camera": "^5.2.0",
-        "react-native-vision-camera-face-detector": "^2.0.6",
         "react-native-vision-camera-worklets": "^5.2.0",
         "react-native-worklets": "0.11.3",
       },
@@ -124,7 +123,7 @@
     },
     "packages/react-native-tgfx": {
       "name": "react-native-tgfx",
-      "version": "0.0.2-alpha.12",
+      "version": "0.1.0",
       "dependencies": {
         "react-reconciler": "0.33.0",
       },
@@ -159,7 +158,7 @@
     },
     "packages/react-native-tgfx-vision-camera": {
       "name": "react-native-tgfx-vision-camera",
-      "version": "0.0.1-alpha.4",
+      "version": "0.1.0",
       "devDependencies": {
         "@eslint/js": "^9.39.4",
         "@typescript-eslint/eslint-plugin": "^8.48.2",
@@ -2466,8 +2465,6 @@
     "react-native-url-polyfill": ["react-native-url-polyfill@3.0.0", "", { "dependencies": { "whatwg-url-without-unicode": "8.0.0-3" }, "peerDependencies": { "react-native": "*" } }, "sha512-aA5CiuUCUb/lbrliVCJ6lZ17/RpNJzvTO/C7gC/YmDQhTUoRD5q5HlJfwLWcxz4VgAhHwXKzhxH+wUN24tAdqg=="],
 
     "react-native-vision-camera": ["react-native-vision-camera@5.2.0", "", { "peerDependencies": { "react": "*", "react-native": "*", "react-native-nitro-image": "*", "react-native-nitro-modules": "*" } }, "sha512-0qvR62KLj15YO0L0MeZFqiepGunDD3Ld1i6tWNtFFxZgU5jIyuTFHBI2hsFM6v1N+GaVez/qe1Jkta9rSe7BFg=="],
-
-    "react-native-vision-camera-face-detector": ["react-native-vision-camera-face-detector@2.0.6", "", { "peerDependencies": { "react": ">= 18", "react-native": ">= 0.74", "react-native-nitro-modules": ">= 0.35", "react-native-vision-camera": ">= 5.0" } }, "sha512-UWB+lPTaPy4bDRWcVCbmYBZdZ8u4p9FxPVeCNY6hmR4e+cnqQLRW+MgiYM2hremFlPUPoPJh8rH7702SBYuB7g=="],
 
     "react-native-vision-camera-worklets": ["react-native-vision-camera-worklets@5.2.0", "", { "peerDependencies": { "react": "*", "react-native": "*", "react-native-nitro-modules": "*", "react-native-vision-camera": "*", "react-native-worklets": "*" } }, "sha512-LqaHDYt+ahzDahLIlgfwpb3lhI6Y/WSVKj+BNjJOiigDmCMuM9UrCESxYIWW5gPMkye14wdDhbCqQRYVoV31OA=="],
 

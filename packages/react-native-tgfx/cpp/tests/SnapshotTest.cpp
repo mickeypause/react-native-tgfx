@@ -44,7 +44,7 @@ tgfx::Device* device() {
 }
 
 std::shared_ptr<tgfx::Surface> drawFrame(tgfx::Context* context,
-                                        std::shared_ptr<tgfx::ColorSpace> space = nullptr) {
+                                         std::shared_ptr<tgfx::ColorSpace> space = nullptr) {
   auto surface = space == nullptr
                      ? tgfx::Surface::Make(context, kWidth, kHeight)
                      : tgfx::Surface::Make(context, kWidth, kHeight, false, 1, false, 0,

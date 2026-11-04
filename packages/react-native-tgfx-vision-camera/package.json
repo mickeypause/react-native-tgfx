@@ -1,6 +1,6 @@
 {
   "name": "react-native-tgfx-vision-camera",
-  "version": "0.0.1-alpha.4",
+  "version": "0.1.0",
   "description": "A native VisionCamera frame-processor plugin that hands camera frames to react-native-tgfx without JS on the per-frame path.",
   "main": "lib/index",
   "module": "lib/index",
